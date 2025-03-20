@@ -1,0 +1,13 @@
+[project]
+name = "pulumi-datarobot-utils"
+version = "0.0.1"
+description = "A set of Pulumi CustomResources and other things on top of the pulumi-datarobot provider."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pulumi>=3.0.0,<4.0.0",
+    "pulumi-datarobot>=0.8.15",
+    "pydantic==2.7.4,<3.0",
+    "datarobot>=3.6.0,<4.0",
+]
