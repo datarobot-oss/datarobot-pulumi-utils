@@ -6,6 +6,7 @@ dist/
 wheels/
 *.egg-info
 .python-version
+src/pulumi_datarobot_utils/_version.py
 
 # Virtual environments
 .venv

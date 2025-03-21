@@ -28,3 +28,9 @@ copyright-check: ## Check if all files have the correct copyright
 build: ## Build the package
 	@echo "🏗️ Building the package"
 	@uv build
+
+clean: ## Clean temporary files
+	@echo "🧹 Cleaning temporary files.."
+	@rm -rf dist
+	@rm -rf .mypy_cache .pytest_cache .ruff_cache *.egg-info
+	@rm -rf .coverage htmlcov coverage.xml
