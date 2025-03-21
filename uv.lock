@@ -423,8 +423,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/01/cb/21ad683bf4b61237f
 
 [[package]]
 name = "pulumi-datarobot-utils"
-version = "0.0.1"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "datarobot" },
     { name = "pulumi" },
