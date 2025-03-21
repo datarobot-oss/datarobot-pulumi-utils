@@ -14,7 +14,7 @@ lint: ## Lint the codebase
 lint-check: ## Check whether the codebase is linted
 	@echo "🧹 Ruff"
 	@uv run ruff check $(SOURCE)
-	@pdm "🧽 MyPy"
+	@echo "🧽 MyPy"
 	@uv run mypy --pretty $(SOURCE)
 
 copyright: ## Apply copyrights to all files
