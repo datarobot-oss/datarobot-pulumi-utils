@@ -19,8 +19,8 @@ lint-check: ## Check whether the codebase is linted
 
 copyright: ## Apply copyrights to all files
 	@echo "🧹 Applying license headers"
-	docker run  --rm -v $(CURDIR):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:eb0e0b091ea41213f712f622797e37526ca1e5d6 -v info -c .licenserc.yaml header fix
+	docker run  --rm -v $(CURDIR):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:eb0e0b091ea41213f712f622797e37526ca1e5d6 -v info -c .github/.licenserc.yaml header fix
 
 copyright-check: ## Check if all files have the correct copyright
 	@echo "👀 Checking for license headers"
-	@docker run  --rm -v $(CURDIR):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:eb0e0b091ea41213f712f622797e37526ca1e5d6 -v info -c .licenserc.yaml header check
+	@docker run  --rm -v $(CURDIR):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:eb0e0b091ea41213f712f622797e37526ca1e5d6 -v info -c .github/.licenserc.yaml header check

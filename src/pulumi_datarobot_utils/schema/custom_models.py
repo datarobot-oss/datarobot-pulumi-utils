@@ -19,7 +19,7 @@ from pulumi_datarobot_utils.schema.base import Schema
 from pulumi_datarobot_utils.schema.common import ResourceBundle
 
 
-class GlobalCustomModelResourceBundles(Enum):
+class CustomModelResourceBundles(Enum):
     CPU_XXS = ResourceBundle(name="XXS", description="1 CPU | 128MB RAM", id="cpu.nano")
     CPU_XS = ResourceBundle(name="XS", description="1 CPU | 256MB RAM", id="cpu.micro")
     CPU_S = ResourceBundle(name="S", description="1 CPU | 512MB RAM", id="cpu.small")
@@ -91,8 +91,8 @@ class GlobalCustomModelResourceBundles(Enum):
         id="DRAWS_g6e.48xlarge_frac1_regular",
     )
 
-# ('aws', 'gcp', 'azure', 'onPremise', 'datarobot', 'datarobotServerless', 'openShift', 'other', 'snowflake', 'sapAiCore')
-class GlobalPredictionEnvironmentPlatforms(StrEnum):
+
+class PredictionEnvironmentPlatforms(StrEnum):
     AWS = "aws"
     GCP = "gcp"
     AZURE = "azure"
@@ -150,4 +150,4 @@ class DeploymentArgs(Schema):
 class PredictionEnvironmentArgs(Schema):
     resource_name: str
     name: str | None = None
-    platform: GlobalPredictionEnvironmentPlatforms
+    platform: PredictionEnvironmentPlatforms
