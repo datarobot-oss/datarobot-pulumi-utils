@@ -11,32 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import annotations
-
-from enum import Enum
-
-from pydantic import BaseModel
+from pulumi_datarobot_utils.schema.base import Schema
 
 
-class ResourceBundleSize(str, Enum):
-    XXS = "cpu.nano"
-    XS = "cpu.micro"
-    S = "cpu.small"
-    M = "cpu.medium"
-    L = "cpu.large"
-    XL = "cpu.xlarge"
-    XXL = "cpu.2xlarge"
-    XXXL = "cpu.3xlarge"
-    XXXXL = "cpu.4xlarge"
-
-
-class CredentialArgs(BaseModel):
+class DatasetArgs(Schema):
     resource_name: str
-    name: str | None = None
-
-
-class DatasetArgs(BaseModel):
-    resource_name: str
-    name: str | None = None
     file_path: str
-
+    name: str | None = None

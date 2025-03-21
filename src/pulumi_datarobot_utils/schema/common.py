@@ -17,6 +17,11 @@ import pulumi
 from pulumi_datarobot_utils.schema.base import Schema
 
 
+class ResourceBundle(Schema):
+    id: str
+    name: str
+    description: str
+
 class UseCaseArgs(Schema):
     resource_name: str
     name: str | None = None

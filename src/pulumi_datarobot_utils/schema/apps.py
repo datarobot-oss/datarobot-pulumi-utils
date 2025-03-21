@@ -17,7 +17,37 @@ from typing import Any
 import datarobot as dr
 
 from pulumi_datarobot_utils.schema.base import Schema
+from pulumi_datarobot_utils.schema.common import ResourceBundle
 
+
+class CustomAppResourceBundles(Enum):
+    CPU_XXS = ResourceBundle(name="XXS", description="1 CPU | 128MB RAM", id="cpu.nano")
+    CPU_XS = ResourceBundle(name="XS", description="1 CPU | 256MB RAM", id="cpu.micro")
+    CPU_S = ResourceBundle(name="S", description="1 CPU | 512MB RAM", id="cpu.small")
+    CPU_M = ResourceBundle(name="M", description="1 CPU | 1GB RAM", id="cpu.medium")
+    CPU_L = ResourceBundle(name="L", description="2 CPU | 1.5GB RAM", id="cpu.large")
+    CPU_XL = ResourceBundle(name="XL", description="2 CPU | 2GB RAM", id="cpu.xlarge")
+    CPU_XXL = ResourceBundle(
+        name="2XL", description="2 CPU | 3GB RAM", id="cpu.2xlarge"
+    )
+    CPU_3XL = ResourceBundle(
+        name="3XL", description="2 CPU | 4GB RAM", id="cpu.3xlarge"
+    )
+    CPU_4XL = ResourceBundle(
+        name="4XL", description="2 CPU | 6GB RAM", id="cpu.4xlarge"
+    )
+    CPU_5XL = ResourceBundle(
+        name="5XL", description="2 CPU | 8GB RAM", id="cpu.5xlarge"
+    )
+    CPU_6XL = ResourceBundle(
+        name="6XL", description="2 CPU | 10GB RAM", id="cpu.6xlarge"
+    )
+    CPU_7XL = ResourceBundle(
+        name="7XL", description="2 CPU | 12GB RAM", id="cpu.7xlarge"
+    )
+    CPU_8XL = ResourceBundle(
+        name="8XL", description="2 CPU | 14GB RAM", id="cpu.8xlarge"
+    )
 
 class ApplicationTemplate(Schema):
     name: str

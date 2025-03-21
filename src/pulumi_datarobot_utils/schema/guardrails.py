@@ -18,7 +18,7 @@ from enum import StrEnum
 from pulumi_datarobot_utils.schema.base import Schema
 
 
-class GlobalGuardrailTemplateName(StrEnum):
+class GuardrailTemplateNames(StrEnum):
     CUSTOM_DEPLOYMENT = "Custom Deployment"
     FAITHFULNESS = "Faithfulness"
     PII_DETECTION = "PII Detection"
@@ -30,6 +30,13 @@ class GlobalGuardrailTemplateName(StrEnum):
     TOXICITY = "Toxicity"
     RESPONSE_TOKENS = "Response Tokens"
     PROMPT_TOKENS = "Prompt Tokens"
+
+
+class GuardrailModelNames(StrEnum):
+    TOXICITY = "[Hugging Face] Toxicity Classifier"
+    SENTIMENT = "[Hugging Face] Sentiment Classifier"
+    REFUSAL = "[DataRobot] LLM Refusal Score"
+    PROMPT_INJECTION = "[Hugging Face] Prompt Injection Classifier"
 
 
 class Stage(StrEnum):
@@ -81,7 +88,7 @@ class GuardrailTemplate(Schema):
 class CustomModelGuardConfigurationArgs(Schema):
     name: str
     stages: list[Stage]
-    template_name: GlobalGuardrailTemplateName
+    template_name: GuardrailTemplateNames
     intervention: Intervention
     input_column_name: str | None = None
     output_column_name: str | None = None
