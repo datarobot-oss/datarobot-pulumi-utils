@@ -24,3 +24,7 @@ copyright: ## Apply copyrights to all files
 copyright-check: ## Check if all files have the correct copyright
 	@echo "👀 Checking for license headers"
 	@docker run  --rm -v $(CURDIR):/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:eb0e0b091ea41213f712f622797e37526ca1e5d6 -v info -c .github/.licenserc.yaml header check
+
+build: ## Build the package
+	@echo "🏗️ Building the package"
+	@uv build

@@ -6,8 +6,8 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11"
 maintainers = [
-    "Lukas Innig <lukas.innig@datarobot.com>",
-    "Roman Hlushko <roman.hlushko@datarobot.com>",
+    { name = "Lukas Innig", email = "lukas.innig@datarobot.com" },
+    { name = "Roman Hlushko", email = "roman.hlushko@datarobot.com" }
 ]
 dependencies = [
     "pulumi>=3.0.0,<4.0.0",
