@@ -28,3 +28,14 @@ class UseCaseArgs(Schema):
     name: str | None = None
     description: str | None = None
     opts: pulumi.ResourceOptions | None = None
+
+
+CronExpr = str | int
+
+
+class Schedule(Schema):
+    dayOfMonth: list[CronExpr] = ["*"]  # TODO: are we sure it's a list?
+    dayOfWeek: list[CronExpr] = ["*"]
+    hour: list[CronExpr] = ["*"]
+    minute: list[CronExpr] = ["*"]
+    month: list[CronExpr] = ["*"]

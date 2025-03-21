@@ -7,7 +7,7 @@ TESTS?=tests
 
 lint: ## Lint the codebase
 	@echo "🧹 Ruff"
-	@uv run ruff format --fix $(SOURCE)
+	@uv run ruff format $(SOURCE)
 	@uv run ruff check --fix $(SOURCE)
 	@echo "🧽 MyPy"
 	@uv run mypy --pretty $(SOURCE)
