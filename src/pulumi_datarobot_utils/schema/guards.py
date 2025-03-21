@@ -13,12 +13,12 @@
 # limitations under the License.
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
-from src.pulumi_datarobot_utils.schema.base import Schema
+from pulumi_datarobot_utils.schema.base import Schema
 
 
-class GlobalGuardrailTemplateName(str, Enum):
+class GlobalGuardrailTemplateName(StrEnum):
     CUSTOM_DEPLOYMENT = "Custom Deployment"
     FAITHFULNESS = "Faithfulness"
     PII_DETECTION = "PII Detection"
@@ -32,18 +32,18 @@ class GlobalGuardrailTemplateName(str, Enum):
     PROMPT_TOKENS = "Prompt Tokens"
 
 
-class Stage(str, Enum):
+class Stage(StrEnum):
     PROMPT = "prompt"
     RESPONSE = "response"
 
 
-class ModerationAction(str, Enum):
+class ModerationAction(StrEnum):
     BLOCK = "block"
     REPORT = "report"
     REPORT_AND_BLOCK = "reportAndBlock"
 
 
-class GuardConditionComparator(Enum):
+class GuardConditionComparator(StrEnum):
     """The comparator used in a guard condition."""
 
     GREATER_THAN = "greaterThan"

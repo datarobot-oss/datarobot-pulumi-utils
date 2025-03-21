@@ -11,15 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import annotations
 
 from typing import Sequence
 
 import pulumi
-import pulumi_datarobot as datarobot
+import pulumi_datarobot as drp
 
-from ..common.schema import CustomModelArgs, DeploymentArgs, RegisteredModelArgs
+from pulumi_datarobot_utils.schema.custom_models import (
+    CustomModelArgs,
+    DeploymentArgs,
+    RegisteredModelArgs,
+)
 
 
 class CustomModelDeployment(pulumi.ComponentResource):
@@ -27,7 +30,7 @@ class CustomModelDeployment(pulumi.ComponentResource):
         self,
         resource_name: str,
         registered_model_args: RegisteredModelArgs,
-        prediction_environment: datarobot.PredictionEnvironment,
+        prediction_environment: drp.PredictionEnvironment,
         deployment_args: DeploymentArgs,
         use_case_ids: Sequence[pulumi.Output[str]] | str | None = None,
         custom_model_version_id: pulumi.Input[str] | None = None,
@@ -67,20 +70,20 @@ class CustomModelDeployment(pulumi.ComponentResource):
             )
 
         if custom_model_args:
-            custom_model_version_id = datarobot.CustomModel(
+            custom_model_version_id = drp.CustomModel(
                 **custom_model_args.model_dump(exclude_none=True),
                 opts=pulumi.ResourceOptions(parent=self),
                 use_case_ids=use_case_ids,
             ).version_id
-            
-        self.registered_model = datarobot.RegisteredModel(
+
+        self.registered_model = drp.RegisteredModel(
             custom_model_version_id=custom_model_version_id,
             **registered_model_args.model_dump(mode="json"),
             opts=pulumi.ResourceOptions(parent=self),
             use_case_ids=use_case_ids,
         )
 
-        self.deployment = datarobot.Deployment(
+        self.deployment = drp.Deployment(
             prediction_environment_id=prediction_environment.id,
             registered_model_version_id=self.registered_model.version_id,
             **deployment_args.model_dump(),

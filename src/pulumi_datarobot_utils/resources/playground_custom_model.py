@@ -11,44 +11,44 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from __future__ import annotations
 
 import pulumi
-import pulumi_datarobot as datarobot
+import pulumi_datarobot as drp
 
-from ..common.schema import CustomModelArgs, LLMBlueprintArgs, PlaygroundArgs
+from pulumi_datarobot_utils.schema.custom_models import CustomModelArgs
+from pulumi_datarobot_utils.schema.llms import LLMBlueprintArgs, PlaygroundArgs
 
 
 class PlaygroundCustomModel(pulumi.ComponentResource):
     def __init__(
         self,
         resource_name: str,
-        use_case: datarobot.UseCase,
+        use_case: drp.UseCase,
         playground_args: PlaygroundArgs,
         llm_blueprint_args: LLMBlueprintArgs,
-        runtime_parameter_values: list[datarobot.CustomModelRuntimeParameterValueArgs],
+        runtime_parameter_values: list[drp.CustomModelRuntimeParameterValueArgs],
         custom_model_args: CustomModelArgs,
-        guard_configurations: list[datarobot.CustomModelGuardConfigurationArgs] | None = None,
+        guard_configurations: list[drp.CustomModelGuardConfigurationArgs] | None = None,
         opts: pulumi.ResourceOptions | None = None,
     ):
         super().__init__(
             "custom:datarobot:PlaygroundCustomModel", resource_name, None, opts
         )
 
-        self.playground = datarobot.Playground(
+        self.playground = drp.Playground(
             use_case_id=use_case.id,
             **playground_args.model_dump(mode="json"),
             opts=pulumi.ResourceOptions(parent=self),
         )
 
-        self.llm_blueprint = datarobot.LlmBlueprint(
+        self.llm_blueprint = drp.LlmBlueprint(
             playground_id=self.playground.id,
             **llm_blueprint_args.model_dump(),
             opts=pulumi.ResourceOptions(parent=self),
         )
 
-        self.custom_model = datarobot.CustomModel(
+        self.custom_model = drp.CustomModel(
             source_llm_blueprint_id=self.llm_blueprint.id,
             runtime_parameter_values=runtime_parameter_values,
             guard_configurations=guard_configurations,

@@ -34,10 +34,8 @@ header:
     - '.poetry_cache/'
     - '.mypy_cache/'
     - '**/.pytest_cache/**'
-    - '**/*_pb2.py'
-    - '**/*_pb2_grpc.py'
-    - 'service.yaml'
     - '**/*.json'
     - '**/*.md'
+    - '**/py.typed'
 
   comment: on-failure

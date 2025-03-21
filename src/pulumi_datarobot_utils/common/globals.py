@@ -198,20 +198,6 @@ class GlobalRegisteredModelName(str, Enum):
     PROMPT_INJECTION = "[Hugging Face] Prompt Injection Classifier"
 
 
-# ('aws', 'gcp', 'azure', 'onPremise', 'datarobot', 'datarobotServerless', 'openShift', 'other', 'snowflake', 'sapAiCore')
-class GlobalPredictionEnvironmentPlatforms(str, Enum):
-    AWS = "aws"
-    GCP = "gcp"
-    AZURE = "azure"
-    ON_PREMISE = "onPremise"
-    DATAROBOT = "datarobot"
-    DATAROBOT_SERVERLESS = "datarobotServerless"
-    OPEN_SHIFT = "openShift"
-    OTHER = "other"
-    SNOWFLAKE = "snowflake"
-    SAP_AI_CORE = "sapAiCore"
-
-
 CredentialType = Literal["azure", "aws", "google", "api"]
 
 
@@ -265,33 +251,3 @@ class GlobalLLM:
 
     # API Models
     DEPLOYED_LLM = LLMConfig(name="custom-model", credential_type="api")
-
-
-class ApplicationTemplate(BaseModel):
-    name: str
-
-    @property
-    def id(self) -> str:
-        client = dr.client.get_client()
-        try:
-            templates = client.get(
-                "customTemplates/", params={"templateType": "customApplicationTemplate"}
-            ).json()
-            template_id: str = next(
-                template["id"]
-                for template in templates["data"]
-                if template["name"] == self.name
-            )
-            return template_id
-        except Exception as e:
-            raise ValueError(
-                f"Could not find the Application Template ID for {self.name}"
-            ) from e
-
-
-class GlobalApplicationTemplates(Enum):
-    FLASK_APP_BASE = ApplicationTemplate(name="Flask App Base")
-    Q_AND_A_CHAT_GENERATION_APP = ApplicationTemplate(name="Q&A Chat Generation App")
-    SLACK_BOT_APP = ApplicationTemplate(name="Slack Bot App")
-    STREAMLIT_APP_BASE = ApplicationTemplate(name="Streamlit App Base")
-    NODE_JS_AND_REACT_APP = ApplicationTemplate(name="Node.js & React Base App")

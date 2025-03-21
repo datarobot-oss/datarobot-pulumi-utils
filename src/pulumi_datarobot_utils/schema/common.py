@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pydantic import BaseModel, ConfigDict, Field
+
+import pulumi
+
+from pulumi_datarobot_utils.schema.base import Schema
 
 
-class Schema(BaseModel):
-    model_config = ConfigDict(
-        from_attributes=True,
-        arbitrary_types_allowed=True,
-    )
-
-__all__ = ("Schema", "Field")
+class UseCaseArgs(Schema):
+    resource_name: str
+    name: str | None = None
+    description: str | None = None
+    opts: pulumi.ResourceOptions | None = None

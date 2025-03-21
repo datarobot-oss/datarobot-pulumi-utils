@@ -11,32 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import annotations
+import pulumi_datarobot as drp
 
-from enum import Enum
-
-from pydantic import BaseModel
+from pulumi_datarobot_utils.schema.base import Field, Schema
 
 
-class ResourceBundleSize(str, Enum):
-    XXS = "cpu.nano"
-    XS = "cpu.micro"
-    S = "cpu.small"
-    M = "cpu.medium"
-    L = "cpu.large"
-    XL = "cpu.xlarge"
-    XXL = "cpu.2xlarge"
-    XXXL = "cpu.3xlarge"
-    XXXXL = "cpu.4xlarge"
-
-
-class CredentialArgs(BaseModel):
+class PlaygroundArgs(Schema):
     resource_name: str
     name: str | None = None
 
 
-class DatasetArgs(BaseModel):
-    resource_name: str
-    name: str | None = None
-    file_path: str
+class LLMSettings(Schema):
+    system_prompt: str
+    max_completion_length: int = Field(le=512)
 
+
+class LLMBlueprintArgs(Schema):
+    resource_name: str
+    description: str | None = None
+    llm_id: str
+    llm_settings: drp.LlmBlueprintLlmSettingsArgs | None = None
+    name: str | None = None
+    prompt_type: str | None = None
+    vector_database_settings: drp.LlmBlueprintVectorDatabaseSettingsArgs | None = None
