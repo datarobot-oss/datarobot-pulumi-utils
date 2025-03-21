@@ -198,20 +198,6 @@ class GlobalRegisteredModelName(str, Enum):
     PROMPT_INJECTION = "[Hugging Face] Prompt Injection Classifier"
 
 
-class GlobalGuardrailTemplateName(str, Enum):
-    CUSTOM_DEPLOYMENT = "Custom Deployment"
-    FAITHFULNESS = "Faithfulness"
-    PII_DETECTION = "PII Detection"
-    PROMPT_INJECTION = "Prompt Injection"
-    ROUGE_1 = "Rouge 1"
-    SENTIMENT_CLASSIFIER = "Sentiment Classifier"
-    STAY_ON_TOPIC_FOR_INPUTS = "Stay on topic for inputs"
-    STAY_ON_TOPIC_FOR_OUTPUTS = "Stay on topic for output"
-    TOXICITY = "Toxicity"
-    RESPONSE_TOKENS = "Response Tokens"
-    PROMPT_TOKENS = "Prompt Tokens"
-
-
 # ('aws', 'gcp', 'azure', 'onPremise', 'datarobot', 'datarobotServerless', 'openShift', 'other', 'snowflake', 'sapAiCore')
 class GlobalPredictionEnvironmentPlatforms(str, Enum):
     AWS = "aws"
