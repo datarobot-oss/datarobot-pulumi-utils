@@ -20,21 +20,17 @@ import yaml
 
 # TODO: Introduce custom types to avoid complex constructions like dict[tuple[...]...]
 
+
 def get_statuses(flags: Iterable[str]) -> dict[str, bool]:
     client = dr.client.get_client()
     flags_json = {"entitlements": [{"name": flag} for flag in flags]}
     response = client.post("entitlements/evaluate/", json=flags_json)
 
-    return {
-        flag_status["name"]: flag_status["value"]
-        for flag_status in response.json()["entitlements"]
-    }
+    return {flag_status["name"]: flag_status["value"] for flag_status in response.json()["entitlements"]}
 
 
 def get_corrections(desired: dict[str, bool], status: dict[str, bool]) -> list[tuple[str, bool]]:
-    return [
-        (flag, desired[flag]) for flag in status.keys() if desired[flag] != status[flag]
-    ]
+    return [(flag, desired[flag]) for flag in status.keys() if desired[flag] != status[flag]]
 
 
 def eval_feature_flags(desired: dict[str, bool]) -> tuple[list[tuple[str, bool]], list[str]]:

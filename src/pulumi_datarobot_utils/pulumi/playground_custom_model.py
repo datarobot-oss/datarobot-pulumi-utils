@@ -32,9 +32,7 @@ class PlaygroundCustomModel(pulumi.ComponentResource):
         guard_configurations: list[drp.CustomModelGuardConfigurationArgs] | None = None,
         opts: pulumi.ResourceOptions | None = None,
     ):
-        super().__init__(
-            "custom:datarobot:PlaygroundCustomModel", resource_name, None, opts
-        )
+        super().__init__("custom:datarobot:PlaygroundCustomModel", resource_name, None, opts)
 
         self.playground = drp.Playground(
             use_case_id=use_case.id,

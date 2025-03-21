@@ -25,19 +25,14 @@ class RuntimeEnvironment(Schema):
     def id(self) -> str:
         client = dr.client.get_client()
         try:
-            environments = client.get(
-                "executionEnvironments/", params={"searchFor": self.name}
-            ).json()
+            environments = client.get("executionEnvironments/", params={"searchFor": self.name}).json()
             env_id: str = next(
-                environment["id"]
-                for environment in environments["data"]
-                if environment["name"] == self.name
+                environment["id"] for environment in environments["data"] if environment["name"] == self.name
             )
             return env_id
         except Exception as e:
-            raise ValueError(
-                f"Could not find the Execution Environment ID for {self.name}"
-            ) from e
+            raise ValueError(f"Could not find the Execution Environment ID for {self.name}") from e
+
 
 class RuntimeEnvironments(Enum):
     PYTHON_312_APPLICATION_BASE = RuntimeEnvironment(
@@ -46,18 +41,10 @@ class RuntimeEnvironments(Enum):
     PYTHON_311_NOTEBOOK_BASE = RuntimeEnvironment(
         name="[DataRobot] Python 3.11 Notebook Base Image",
     )
-    PYTHON_311_MODERATIONS = RuntimeEnvironment(
-        name="[GenAI] Python 3.11 with Moderations"
-    )
-    PYTHON_312_MODERATIONS = RuntimeEnvironment(
-        name="[GenAI] Python 3.12 with Moderations"
-    )
-    PYTHON_39_CUSTOM_METRICS = RuntimeEnvironment(
-        name="[DataRobot] Python 3.9 Custom Metrics Templates Drop-In"
-    )
-    PYTHON_311_NOTEBOOK_DROP_IN = RuntimeEnvironment(
-        name="[DataRobot] Python 3.11 Notebook Drop-In"
-    )
+    PYTHON_311_MODERATIONS = RuntimeEnvironment(name="[GenAI] Python 3.11 with Moderations")
+    PYTHON_312_MODERATIONS = RuntimeEnvironment(name="[GenAI] Python 3.12 with Moderations")
+    PYTHON_39_CUSTOM_METRICS = RuntimeEnvironment(name="[DataRobot] Python 3.9 Custom Metrics Templates Drop-In")
+    PYTHON_311_NOTEBOOK_DROP_IN = RuntimeEnvironment(name="[DataRobot] Python 3.11 Notebook Drop-In")
     PYTHON_39_STREAMLIT = RuntimeEnvironment(name="[Experimental] Python 3.9 Streamlit")
     PYTHON_311_GENAI = RuntimeEnvironment(name="[DataRobot] Python 3.11 GenAI")
     PYTHON_39_GENAI = RuntimeEnvironment(name="[DataRobot] Python 3.9 GenAI")
@@ -65,16 +52,8 @@ class RuntimeEnvironments(Enum):
     JULIA_DROP_IN = RuntimeEnvironment(name="[DataRobot] Julia Drop-In")
     PYTHON_39_PMML = RuntimeEnvironment(name="[DataRobot] Python 3.9 PMML Drop-In")
     R_421_DROP_IN = RuntimeEnvironment(name="[DataRobot] R 4.2.1 Drop-In")
-    PYTHON_39_PYTORCH = RuntimeEnvironment(
-        name="[DataRobot] Python 3.9 PyTorch Drop-In"
-    )
-    JAVA_11_DROP_IN = RuntimeEnvironment(
-        name="[DataRobot] Java 11 Drop-In (DR Codegen, H2O)"
-    )
-    PYTHON_39_SCIKIT_LEARN = RuntimeEnvironment(
-        name="[DataRobot] Python 3.9 Scikit-Learn Drop-In"
-    )
-    PYTHON_39_XGBOOST = RuntimeEnvironment(
-        name="[DataRobot] Python 3.9 XGBoost Drop-In"
-    )
+    PYTHON_39_PYTORCH = RuntimeEnvironment(name="[DataRobot] Python 3.9 PyTorch Drop-In")
+    JAVA_11_DROP_IN = RuntimeEnvironment(name="[DataRobot] Java 11 Drop-In (DR Codegen, H2O)")
+    PYTHON_39_SCIKIT_LEARN = RuntimeEnvironment(name="[DataRobot] Python 3.9 Scikit-Learn Drop-In")
+    PYTHON_39_XGBOOST = RuntimeEnvironment(name="[DataRobot] Python 3.9 XGBoost Drop-In")
     PYTHON_39_KERAS = RuntimeEnvironment(name="[DataRobot] Python 3.9 Keras Drop-In")

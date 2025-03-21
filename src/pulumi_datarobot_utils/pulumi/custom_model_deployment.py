@@ -59,15 +59,9 @@ class CustomModelDeployment(pulumi.ComponentResource):
         opts : Optional[pulumi.ResourceOptions]
             Optional Pulumi resource options.
         """
-        super().__init__(
-            "custom:datarobot:CustomModelDeployment", resource_name, None, opts
-        )
-        if (custom_model_version_id and custom_model_args) or (
-            not custom_model_version_id and not custom_model_args
-        ):
-            raise ValueError(
-                "Exactly one of custom_model_version_id and custom_model_args must be specified"
-            )
+        super().__init__("custom:datarobot:CustomModelDeployment", resource_name, None, opts)
+        if (custom_model_version_id and custom_model_args) or (not custom_model_version_id and not custom_model_args):
+            raise ValueError("Exactly one of custom_model_version_id and custom_model_args must be specified")
 
         if custom_model_args:
             custom_model_version_id = drp.CustomModel(

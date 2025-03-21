@@ -27,27 +27,14 @@ class CustomAppResourceBundles(Enum):
     CPU_M = ResourceBundle(name="M", description="1 CPU | 1GB RAM", id="cpu.medium")
     CPU_L = ResourceBundle(name="L", description="2 CPU | 1.5GB RAM", id="cpu.large")
     CPU_XL = ResourceBundle(name="XL", description="2 CPU | 2GB RAM", id="cpu.xlarge")
-    CPU_XXL = ResourceBundle(
-        name="2XL", description="2 CPU | 3GB RAM", id="cpu.2xlarge"
-    )
-    CPU_3XL = ResourceBundle(
-        name="3XL", description="2 CPU | 4GB RAM", id="cpu.3xlarge"
-    )
-    CPU_4XL = ResourceBundle(
-        name="4XL", description="2 CPU | 6GB RAM", id="cpu.4xlarge"
-    )
-    CPU_5XL = ResourceBundle(
-        name="5XL", description="2 CPU | 8GB RAM", id="cpu.5xlarge"
-    )
-    CPU_6XL = ResourceBundle(
-        name="6XL", description="2 CPU | 10GB RAM", id="cpu.6xlarge"
-    )
-    CPU_7XL = ResourceBundle(
-        name="7XL", description="2 CPU | 12GB RAM", id="cpu.7xlarge"
-    )
-    CPU_8XL = ResourceBundle(
-        name="8XL", description="2 CPU | 14GB RAM", id="cpu.8xlarge"
-    )
+    CPU_XXL = ResourceBundle(name="2XL", description="2 CPU | 3GB RAM", id="cpu.2xlarge")
+    CPU_3XL = ResourceBundle(name="3XL", description="2 CPU | 4GB RAM", id="cpu.3xlarge")
+    CPU_4XL = ResourceBundle(name="4XL", description="2 CPU | 6GB RAM", id="cpu.4xlarge")
+    CPU_5XL = ResourceBundle(name="5XL", description="2 CPU | 8GB RAM", id="cpu.5xlarge")
+    CPU_6XL = ResourceBundle(name="6XL", description="2 CPU | 10GB RAM", id="cpu.6xlarge")
+    CPU_7XL = ResourceBundle(name="7XL", description="2 CPU | 12GB RAM", id="cpu.7xlarge")
+    CPU_8XL = ResourceBundle(name="8XL", description="2 CPU | 14GB RAM", id="cpu.8xlarge")
+
 
 class ApplicationTemplate(Schema):
     name: str
@@ -57,19 +44,11 @@ class ApplicationTemplate(Schema):
         client = dr.client.get_client()
 
         try:
-            templates = client.get(
-                "customTemplates/", params={"templateType": "customApplicationTemplate"}
-            ).json()
-            template_id: str = next(
-                template["id"]
-                for template in templates["data"]
-                if template["name"] == self.name
-            )
+            templates = client.get("customTemplates/", params={"templateType": "customApplicationTemplate"}).json()
+            template_id: str = next(template["id"] for template in templates["data"] if template["name"] == self.name)
             return template_id
         except Exception as e:
-            raise ValueError(
-                f"Could not find the Application Template ID for {self.name}"
-            ) from e
+            raise ValueError(f"Could not find the Application Template ID for {self.name}") from e
 
 
 class ApplicationTemplates(Enum):
@@ -82,7 +61,7 @@ class ApplicationTemplates(Enum):
 
 class ApplicationSourceArgs(Schema):
     resource_name: str
-    files: Any | None = None # TODO: let's actually try to find out the type here
+    files: Any | None = None  # TODO: let's actually try to find out the type here
     folder_path: str | None = None
     name: str | None = None
 

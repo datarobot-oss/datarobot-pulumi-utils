@@ -22,6 +22,7 @@ class ResourceBundle(Schema):
     name: str
     description: str
 
+
 class UseCaseArgs(Schema):
     resource_name: str
     name: str | None = None

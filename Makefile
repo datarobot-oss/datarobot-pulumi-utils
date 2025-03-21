@@ -7,12 +7,14 @@ TESTS?=tests
 
 lint: ## Lint the codebase
 	@echo "🧹 Ruff"
+	@uv run ruff format --fix $(SOURCE)
 	@uv run ruff check --fix $(SOURCE)
 	@echo "🧽 MyPy"
 	@uv run mypy --pretty $(SOURCE)
 
 lint-check: ## Check whether the codebase is linted
 	@echo "🧹 Ruff"
+	@uv run ruff format --check $(SOURCE)
 	@uv run ruff check $(SOURCE)
 	@echo "🧽 MyPy"
 	@uv run mypy --pretty $(SOURCE)

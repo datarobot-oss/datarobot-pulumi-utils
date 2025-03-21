@@ -26,30 +26,14 @@ class CustomModelResourceBundles(Enum):
     CPU_M = ResourceBundle(name="M", description="1 CPU | 1GB RAM", id="cpu.medium")
     CPU_L = ResourceBundle(name="L", description="2 CPU | 1.5GB RAM", id="cpu.large")
     CPU_XL = ResourceBundle(name="XL", description="2 CPU | 2GB RAM", id="cpu.xlarge")
-    CPU_XXL = ResourceBundle(
-        name="XXL", description="2 CPU | 3GB RAM", id="cpu.2xlarge"
-    )
-    CPU_3XL = ResourceBundle(
-        name="3XL", description="2 CPU | 4GB RAM", id="cpu.3xlarge"
-    )
-    CPU_4XL = ResourceBundle(
-        name="4XL", description="2 CPU | 6GB RAM", id="cpu.4xlarge"
-    )
-    CPU_5XL = ResourceBundle(
-        name="5XL", description="2 CPU | 8GB RAM", id="cpu.5xlarge"
-    )
-    CPU_6XL = ResourceBundle(
-        name="6XL", description="2 CPU | 10GB RAM", id="cpu.6xlarge"
-    )
-    CPU_7XL = ResourceBundle(
-        name="7XL", description="2 CPU | 12GB RAM", id="cpu.7xlarge"
-    )
-    CPU_8XL = ResourceBundle(
-        name="8XL", description="2 CPU | 14GB RAM", id="cpu.8xlarge"
-    )
-    CPU_16XL = ResourceBundle(
-        name="16XL", description="4 CPU | 28GB RAM", id="cpu.16xlarge"
-    )
+    CPU_XXL = ResourceBundle(name="XXL", description="2 CPU | 3GB RAM", id="cpu.2xlarge")
+    CPU_3XL = ResourceBundle(name="3XL", description="2 CPU | 4GB RAM", id="cpu.3xlarge")
+    CPU_4XL = ResourceBundle(name="4XL", description="2 CPU | 6GB RAM", id="cpu.4xlarge")
+    CPU_5XL = ResourceBundle(name="5XL", description="2 CPU | 8GB RAM", id="cpu.5xlarge")
+    CPU_6XL = ResourceBundle(name="6XL", description="2 CPU | 10GB RAM", id="cpu.6xlarge")
+    CPU_7XL = ResourceBundle(name="7XL", description="2 CPU | 12GB RAM", id="cpu.7xlarge")
+    CPU_8XL = ResourceBundle(name="8XL", description="2 CPU | 14GB RAM", id="cpu.8xlarge")
+    CPU_16XL = ResourceBundle(name="16XL", description="4 CPU | 28GB RAM", id="cpu.16xlarge")
     GPU_S = ResourceBundle(
         name="GPU - S",
         description="1 x NVIDIA T4 | 16GB VRAM | 4 CPU | 16GB RAM",

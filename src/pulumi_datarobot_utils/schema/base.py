@@ -20,4 +20,5 @@ class Schema(BaseModel):
         arbitrary_types_allowed=True,
     )
 
+
 __all__ = ("Schema", "Field")
