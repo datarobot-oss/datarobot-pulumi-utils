@@ -28,11 +28,17 @@ jobs:
           cache-dependency-glob: "uv.lock"
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: uv sync --all-extras --dev
+
+      - name: Check Copyrights
+        uses: apache/skywalking-eyes/dependency@main
+        with:
+          command: "check"
+          config: ".licenserc.yaml"
 
       - name: "Linting"
         run: "make lint-check"
 
-      - name: "Build package"
+      - name: "Build Package"
         run: "make build"
