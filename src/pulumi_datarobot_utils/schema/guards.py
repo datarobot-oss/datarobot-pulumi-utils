@@ -15,7 +15,8 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from src.pulumi_datarobot_utils.schema.base import Schema
+
 
 class GlobalGuardrailTemplateName(str, Enum):
     CUSTOM_DEPLOYMENT = "Custom Deployment"
@@ -57,20 +58,19 @@ class GuardConditionComparator(Enum):
     DOES_NOT_CONTAIN = "doesNotContain"
 
 
-class Condition(BaseModel):
+class Condition(Schema):
     comparand: float | str | bool | list[str]
     comparator: GuardConditionComparator
 
 
-class Intervention(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class Intervention(Schema):
     action: ModerationAction
     condition: str
     message: str
     # send_notification: bool
 
 
-class GuardrailTemplate(BaseModel):
+class GuardrailTemplate(Schema):
     template_name: str
     registered_model_name: str | None = None
     name: str
@@ -78,8 +78,7 @@ class GuardrailTemplate(BaseModel):
     intervention: Intervention
 
 
-class CustomModelGuardConfigurationArgs(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class CustomModelGuardConfigurationArgs(Schema):
     name: str
     stages: list[Stage]
     template_name: GlobalGuardrailTemplateName

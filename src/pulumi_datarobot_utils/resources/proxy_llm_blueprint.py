@@ -18,7 +18,7 @@ from typing import Any
 import pulumi
 import pulumi_datarobot as datarobot
 
-from infra.common.schema import LLMSettings, VectorDatabaseSettings
+from ..schema import LLMSettings, VectorDatabaseSettings
 
 
 class ProxyLLMBlueprint(pulumi.ComponentResource):

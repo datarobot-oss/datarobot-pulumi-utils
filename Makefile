@@ -7,15 +7,15 @@ TESTS?=tests
 
 lint: ## Lint the codebase
 	@echo "🧹 Ruff"
-	@pdm run ruff check --fix $(SOURCE) $(TESTS)
+	@uv run ruff check --fix $(SOURCE)
 	@echo "🧽 MyPy"
-	@pdm run mypy --pretty $(SOURCE) $(TESTS)
+	@uv run mypy --pretty $(SOURCE)
 
 lint-check: ## Check whether the codebase is linted
 	@echo "🧹 Ruff"
-	@pdm run ruff check $(SOURCE) $(TESTS)
+	@uv run ruff check $(SOURCE)
 	@pdm "🧽 MyPy"
-	@poetry run mypy --pretty $(SOURCE) $(TESTS)
+	@uv run mypy --pretty $(SOURCE)
 
 copyright: ## Apply copyrights to all files
 	@echo "🧹 Applying license headers"
