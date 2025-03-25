@@ -78,6 +78,6 @@ class ProxyLLMBlueprint(pulumi.ComponentResource):
     @pulumi.getter(name="id")
     def id(self) -> pulumi.Output[str]:
         """
-        The ID of the latest Custom Model version.
+        The ID of the latest LLM Blueprint version.
         """
         return self.llm_blueprint.id

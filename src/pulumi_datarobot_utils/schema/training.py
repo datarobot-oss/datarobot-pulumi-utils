@@ -13,6 +13,7 @@
 # limitations under the License.
 from enum import StrEnum
 
+import datarobot as dr
 from pydantic import ConfigDict
 
 from pulumi_datarobot_utils.schema.base import Field, Schema
@@ -59,9 +60,6 @@ class ValidationType(StrEnum):
     TVH = "TVH"
 
 
-# Enumerated Values¶
-# Property 	Value
-# type 	[schedule, data_drift_decline, accuracy_decline, None]
 class TriggerType(StrEnum):
     SCHEDULE = "schedule"
     DATA_DRIFT_DECLINE = "data_drift_decline"
@@ -92,15 +90,9 @@ class ProjectOptionsStrategy(StrEnum):
     CUSTOM = "custom"
 
 
-class AutopilotMode(StrEnum):
-    AUTO = "auto"
-    QUICK = "quick"
-    COMPREHENSIVE = "comprehensive"
-
-
 class AutopilotOptions(Schema):
     blend_best_models: bool = True
-    mode: AutopilotMode = AutopilotMode.QUICK
+    mode: dr.AUTOPILOT_MODE = dr.AUTOPILOT_MODE.QUICK
     run_leakage_removed_feature_list: bool = True
     scoring_code_only: bool = False
     shap_only_mode: bool = False

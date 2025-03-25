@@ -18,6 +18,8 @@ from urllib.parse import urlsplit
 def get_deployment_url(deployment_id: str) -> str:
     """Translate deployment ID to GUI URL.
 
+    TODO(CFX-1849): Replace it with a call to Python SDK
+
     Parameters
     ----------
     deployment_id : str

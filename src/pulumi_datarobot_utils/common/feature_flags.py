@@ -61,7 +61,7 @@ def eval_feature_flag_statuses(desired_flags: FeatureFlagSet) -> tuple[list[Feat
 
 
 def check_feature_flags(yaml_path: pathlib.Path, raise_corrections: bool = True) -> None:
-    """Find incorrect, and invalid feature flags
+    """Find incorrect and invalid feature flags
 
     Returns a list of feature flag corrections the user needs to make and
     a list of invalid feature flags.

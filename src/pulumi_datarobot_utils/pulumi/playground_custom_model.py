@@ -68,6 +68,6 @@ class PlaygroundCustomModel(pulumi.ComponentResource):
     @pulumi.getter(name="versionId")
     def version_id(self) -> pulumi.Output[str]:
         """
-        The ID of the latest Custom Model version.
+        The ID of the latest Playground Custom Model version.
         """
         return self.custom_model.version_id

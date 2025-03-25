@@ -48,7 +48,7 @@ def get_stack() -> str:
     raise ValueError(
         (
             "Unable to retrieve the currently active stack. "
-            "Verify you have selected created and selected a stack with `pulumi stack`."
+            "Verify you have created and selected a stack with `pulumi stack`."
         )
     )
 

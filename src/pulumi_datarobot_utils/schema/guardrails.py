@@ -74,7 +74,6 @@ class Intervention(Schema):
     action: ModerationAction
     condition: str
     message: str
-    # send_notification: bool
 
 
 class GuardrailTemplate(Schema):

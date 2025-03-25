@@ -16,5 +16,5 @@ from pulumi_datarobot_utils.schema.base import Schema
 
 class DatasetArgs(Schema):
     resource_name: str
-    file_path: str
+    file_path: str  # TODO: consider to use pathlib.Path here
     name: str | None = None
