@@ -20,6 +20,12 @@ jobs:
     steps:
       - uses: "actions/checkout@v4"
 
+      - name: Install Taskfile
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       # Ref: https://docs.astral.sh/uv/guides/integration/github/#installation
       - name: Setup uv
         uses: astral-sh/setup-uv@v5
@@ -38,7 +44,7 @@ jobs:
           config: ".licenserc.yaml"
 
       - name: "Linting"
-        run: "make lint-check"
+        run: "task lint-check"
 
       - name: "Build Package"
-        run: "make build"
+        run: "task build"
