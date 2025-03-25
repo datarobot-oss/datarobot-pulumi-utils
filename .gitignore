@@ -11,6 +11,8 @@ src/pulumi_datarobot_utils/_version.py
 # Virtual environments
 .venv
 venv
+# don't lock dependencies as this is a library
+uv.lock
 
 # Editors
 .idea
