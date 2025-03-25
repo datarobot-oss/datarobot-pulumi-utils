@@ -4,7 +4,7 @@ dynamic = ["version"]
 description = "A set of Pulumi CustomResources and other utilities built on top of the pulumi-datarobot provider."
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 maintainers = [
     { name = "DataRobot", email = "api-maintainer@datarobot.com" },
 ]
@@ -46,7 +46,7 @@ version = "{version}"
 
 [tool.ruff]
 line-length = 120
-target-version = "py311"
+target-version = "py39"
 # Exclude a variety of commonly ignored directories.
 exclude = [
   ".bzr",
@@ -131,7 +131,7 @@ exclude = """(?x)(
     | .cache
     | e2e/
   )"""
-python_version = "3.11"
+python_version = "3.9"
 check_untyped_defs = true
 disallow_any_generics = true
 disallow_incomplete_defs = true

@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import StrEnum
-from typing import Literal
+from __future__ import annotations
 
-from pulumi_datarobot_utils.schema.base import Field, Schema
+from typing import Literal, Union
+
+from pulumi_datarobot_utils.schema.base import Field, Schema, StrEnum
 
 
 class ChunkSizeTypes(StrEnum):
@@ -93,29 +94,29 @@ class SynapseIntake(Schema):
     type: Literal["synapse"]
 
 
-PredictionIntake = (
-    AzureIntake
-    | BigQueryIntake
-    | DataStageIntake
-    | Catalog
-    | DSSIntake
-    | FileSystemIntake
-    | GCPIntake
-    | HTTPIntake
-    | JDBCIntake
-    | LocalFileIntake
-    | S3Intake
-    | SnowflakeIntake
-    | SynapseIntake
-)
-
-
 class AzureOutput(Schema):
     type: Literal["azure"] = "azure"
     credentialId: str
     url: str
     format: str = "csv"
     partitionColumns: list[str] = Field(default_factory=list)
+
+
+PredictionIntake = Union[
+    AzureIntake,
+    BigQueryIntake,
+    DataStageIntake,
+    Catalog,
+    DSSIntake,
+    FileSystemIntake,
+    GCPIntake,
+    HTTPIntake,
+    JDBCIntake,
+    LocalFileIntake,
+    S3Intake,
+    SnowflakeIntake,
+    SynapseIntake,
+]
 
 
 class BigQueryOutput(Schema):
@@ -168,18 +169,19 @@ class TableauOutput(Schema):
     type: Literal["tableau"]
 
 
-PredictionOutput = (
-    AzureOutput
-    | BigQueryOutput
-    | FileSystemOutput
-    | GCPOutput
-    | HTTPOutput
-    | JDBCOutput
-    | S3Output
-    | SnowflakeOutput
-    | SynapseOutput
-    | TableauOutput
-)
+PredictionOutput = Union[
+    AzureOutput,
+    BigQueryOutput,
+    FileSystemOutput,
+    GCPOutput,
+    HTTPOutput,
+    JDBCOutput,
+    LocalFileOutput,
+    S3Output,
+    SnowflakeOutput,
+    SynapseOutput,
+    TableauOutput,
+]
 
 
 class BatchPredictionJobPredictionInstance(Schema):
@@ -203,11 +205,11 @@ class BatchJobTimeSeriesSettingsHistorical(Schema):
     type: Literal["historical"]
 
 
-TimeSeriesSettings = (
-    BatchJobTimeSeriesSettingsForecast
-    | BatchPredictionJobTimeSeriesSettingsForecastWithPolicy
-    | BatchJobTimeSeriesSettingsHistorical
-)
+TimeSeriesSettings = Union[
+    BatchJobTimeSeriesSettingsForecast,
+    BatchPredictionJobTimeSeriesSettingsForecastWithPolicy,
+    BatchJobTimeSeriesSettingsHistorical,
+]
 
 
 class BatchPredictionJobDefinitionsCreate(Schema):

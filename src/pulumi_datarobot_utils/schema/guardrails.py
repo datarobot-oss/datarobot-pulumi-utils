@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import StrEnum
+from __future__ import annotations
 
-from pulumi_datarobot_utils.schema.base import Schema
+from pulumi_datarobot_utils.schema.base import Schema, StrEnum
 
 
 class GuardrailTemplateNames(StrEnum):

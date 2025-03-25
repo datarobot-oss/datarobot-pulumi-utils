@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import StrEnum
+from __future__ import annotations
 
 import datarobot as dr
 from pydantic import ConfigDict
 
-from pulumi_datarobot_utils.schema.base import Field, Schema
+from pulumi_datarobot_utils.schema.base import Field, Schema, StrEnum
 from pulumi_datarobot_utils.schema.common import Schedule
 
 
