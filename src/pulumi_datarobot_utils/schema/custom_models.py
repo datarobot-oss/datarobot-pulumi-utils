@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import Enum, StrEnum
+from __future__ import annotations
+
+from enum import Enum
 
 import pulumi_datarobot as drp
 
-from pulumi_datarobot_utils.schema.base import Schema
+from pulumi_datarobot_utils.schema.base import Schema, StrEnum
 from pulumi_datarobot_utils.schema.common import ResourceBundle
 
 

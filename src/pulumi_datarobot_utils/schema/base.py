@@ -11,7 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from enum import Enum
+
 from pydantic import BaseModel, ConfigDict, Field
+
+
+class StrEnum(str, Enum):  # a shim until we can drop 3.9 & 3.10 support
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 class Schema(BaseModel):
@@ -21,4 +28,4 @@ class Schema(BaseModel):
     )
 
 
-__all__ = ("Schema", "Field")
+__all__ = ("Schema", "Field", "StrEnum")
