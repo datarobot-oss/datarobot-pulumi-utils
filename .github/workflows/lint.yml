@@ -49,5 +49,5 @@ jobs:
       - name: "Build Package"
         run: "task build"
 
-      - name: "Build Package"
+      - name: "Run Tests"
         run: "task test"
