@@ -41,5 +41,5 @@ jobs:
 
       - name: Publish Package
         run: task publish
-        with:
+        env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
