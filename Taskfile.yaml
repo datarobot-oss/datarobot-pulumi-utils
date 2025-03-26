@@ -1,0 +1,62 @@
+version: '3'
+
+env:
+  SRCDIR: ./src/
+  TESTDIR: ./tests/
+
+tasks:
+  lint:
+    desc: 🧹 Lint the codebase
+    cmds:
+      - echo "🧹 Linting"
+      - uv run ruff format $SRCDIR
+      - uv run ruff check --fix $SRCDIR
+      - uv run mypy --pretty $SRCDIR
+
+  lint-check:
+    desc: 🧹 Check whether the codebase is linted
+    cmds:
+        - echo "🧹 Linting"
+        - uv run ruff format --check $SRCDIR
+        - uv run ruff check $SRCDIR
+        - uv run mypy --pretty $SRCDIR
+
+  test:
+    desc: 🧪 Run the tests
+    cmds:
+      - echo "🧪 Running the tests"
+      - uv run coverage run -m pytest $TESTDIR $SRCDIR
+
+  copyright:
+    aliases: [license]
+    desc: 📜 Apply license headers
+    cmds:
+      - echo "📜 Applying license headers"
+      - docker run  --rm -v $PWD:/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:eb0e0b091ea41213f712f622797e37526ca1e5d6 -v info -c .licenserc.yaml header fix
+
+  copyright-check:
+    aliases: [license-check]
+    desc: 📜 Checking for license headers
+    cmds:
+      - echo "📜 Applying license headers"
+      - docker run  --rm -v $PWD:/github/workspace ghcr.io/apache/skywalking-eyes/license-eye:eb0e0b091ea41213f712f622797e37526ca1e5d6 -v info -c .licenserc.yaml header check
+
+  build:
+    desc: 🏗️ Build the package
+    cmds:
+      - echo "🏗️ Building the package"
+      - uv build
+
+  publish:
+    desc: 📦 Publish the package
+    cmds:
+      - echo "📦 Building the package"
+      - uv publish
+
+  clean:
+    desc: 🧹 Clean temporary files
+    cmds:
+      - echo "🧹 Cleaning temporary files.."
+      - rm -rf dist
+      - rm -rf .mypy_cache .pytest_cache .ruff_cache *.egg-info
+      - rm -rf .coverage htmlcov coverage.xml

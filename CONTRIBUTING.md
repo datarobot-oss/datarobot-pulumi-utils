@@ -4,6 +4,7 @@ Guidelines for developing and contributing to this project.
 
 ## List of project maintainers
 
+- [Lukas Innig](https://github.com/derluke)
 - [Roman Hlushko](https://github.com/roma-glushko)
 
 ## Opening new issues
