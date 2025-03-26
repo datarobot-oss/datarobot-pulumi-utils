@@ -46,6 +46,9 @@ class ApplicationTemplate(Schema):
         client = dr.client.get_client()
 
         try:
+            # TODO: Consider using Python SDK here:
+            #   https://github.com/datarobot/public_api_client/blob/070241a9a21b5bf19ccaaa3163b59741a8c5f3d6/datarobot/models/custom_templates.py#L168-L177
+            #   https://github.com/datarobot/public_api_client/blob/070241a9a21b5bf19ccaaa3163b59741a8c5f3d6/datarobot/models/custom_templates.py#L116
             templates = client.get("customTemplates/", params={"templateType": "customApplicationTemplate"}).json()
             template_id: str = next(template["id"] for template in templates["data"] if template["name"] == self.name)
             return template_id

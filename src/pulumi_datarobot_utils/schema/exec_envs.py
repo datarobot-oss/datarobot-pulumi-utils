@@ -25,6 +25,8 @@ class RuntimeEnvironment(Schema):
     def id(self) -> str:
         client = dr.client.get_client()
         try:
+            # TODO: Consider using Python SDK here instead of bare requests:
+            #  https://datarobot-public-api-client.readthedocs-hosted.com/en/latest-release/custom_models.html#datarobot.ExecutionEnvironment.list
             environments = client.get("executionEnvironments/", params={"searchFor": self.name}).json()
             env_id: str = next(
                 environment["id"] for environment in environments["data"] if environment["name"] == self.name

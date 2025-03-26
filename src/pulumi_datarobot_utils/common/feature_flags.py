@@ -29,6 +29,7 @@ class FeatureFlagCorrection(NamedTuple):
 def fetch_flag_statuses(flags: Iterable[str]) -> FeatureFlagSet:
     client = dr.client.get_client()
     flags_json = {"entitlements": [{"name": flag} for flag in flags]}
+    # TODO: we need to use Python SDK here (this method may be missing as of now)
     response = client.post("entitlements/evaluate/", json=flags_json)
 
     return {flag_status["name"]: flag_status["value"] for flag_status in response.json()["entitlements"]}
@@ -63,7 +64,9 @@ def eval_feature_flag_statuses(desired_flags: FeatureFlagSet) -> tuple[list[Feat
 def check_feature_flags(yaml_path: pathlib.Path, raise_corrections: bool = True) -> None:
     """Find incorrect and invalid feature flags
 
-    Returns a list of feature flag corrections the user needs to make and
+    Returns
+    -------
+    A list of feature flag corrections the user needs to make and
     a list of invalid feature flags.
     """
     with open(yaml_path) as f:
