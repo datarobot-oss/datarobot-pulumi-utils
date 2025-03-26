@@ -37,8 +37,8 @@ CronExpr = Union[str, int]
 
 
 class Schedule(Schema):
-    dayOfMonth: list[CronExpr] = ["*"]  # TODO: are we sure it's a list?
-    dayOfWeek: list[CronExpr] = ["*"]
+    day_of_month: list[CronExpr] = ["*"]
+    day_of_week: list[CronExpr] = ["*"]
     hour: list[CronExpr] = ["*"]
     minute: list[CronExpr] = ["*"]
     month: list[CronExpr] = ["*"]
