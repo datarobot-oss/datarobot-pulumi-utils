@@ -31,7 +31,7 @@ dependencies = [
     "pulumi>=3.0.0,<4.0.0",
     "pulumi-datarobot>=0.8.15",
     "pydantic>=2.7.4,<3.0",
-    "datarobot>=3.6.0,<4.0",
+    "datarobot>=3.5.2,<4.0",
     "PyYAML>=6.0.2,<7.0"
 ]
 
