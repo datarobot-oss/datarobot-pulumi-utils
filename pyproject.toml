@@ -4,6 +4,25 @@ dynamic = ["version"]
 description = "A set of Pulumi CustomResources and other utilities built on top of the pulumi-datarobot provider."
 readme = "README.md"
 license = "Apache-2.0"
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Internet",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
 requires-python = ">=3.9"
 maintainers = [
     { name = "DataRobot", email = "api-maintainer@datarobot.com" },
@@ -17,7 +36,8 @@ dependencies = [
 ]
 
 [project.urls]
-repository = "https://github.com/datarobot-oss/pulumi-datarobot-utils"
+Homepage = "https://datarobot.com"
+Source = "https://github.com/datarobot-oss/pulumi-datarobot-utils"
 
 [dependency-groups]
 dev = [
