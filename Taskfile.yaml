@@ -21,6 +21,12 @@ tasks:
         - uv run ruff check $SRCDIR
         - uv run mypy --pretty $SRCDIR
 
+  test:
+    desc: 🧪 Run the tests
+    cmds:
+      - echo "🧪 Running the tests"
+      - uv run coverage run -m pytest $TESTDIR $SRCDIR
+
   copyright:
     aliases: [license]
     desc: 📜 Apply license headers
