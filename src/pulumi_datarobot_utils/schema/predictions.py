@@ -145,8 +145,8 @@ class JDBCOutput(Schema):
     createTableIfNotExists: bool = False
     credentialId: str | None = None
     db_schema: str | None = Field(default=None, alias="schema")
-    updateColumns: list[str] | None = Field(default_factory=list)
-    whereColumns: list[str] | None = Field(default_factory=list)
+    updateColumns: list[str] | None = Field(default_factory=lambda: [])
+    whereColumns: list[str] | None = Field(default_factory=lambda: [])
 
 
 class LocalFileOutput(Schema):
