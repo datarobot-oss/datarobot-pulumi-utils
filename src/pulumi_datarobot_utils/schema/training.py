@@ -19,7 +19,7 @@ from typing import Any
 import datarobot as dr
 from pydantic import ConfigDict
 
-from pulumi_datarobot_utils.schema.base import Field, Schema, StrEnum
+from pulumi_datarobot_utils.schema.base import Schema, StrEnum
 from pulumi_datarobot_utils.schema.common import Schedule
 
 
@@ -113,7 +113,7 @@ class Periodicity(Schema):
 
 class RetrainingTrigger(Schema):
     min_interval_between_runs: str | None = None
-    schedule: Schedule = Field(default_factory=Schedule)
+    schedule: Schedule | None = None
     status_declines_to_failing: bool = True
     status_declines_to_warning: bool = True
     status_still_in_decline: bool | None = True
