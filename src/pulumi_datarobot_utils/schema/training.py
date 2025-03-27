@@ -95,7 +95,7 @@ class ProjectOptionsStrategy(StrEnum):
 
 class AutopilotOptions(Schema):
     blend_best_models: bool = True
-    mode: dr.AUTOPILOT_MODE = dr.AUTOPILOT_MODE.QUICK
+    mode: str = dr.AUTOPILOT_MODE.QUICK
     run_leakage_removed_feature_list: bool = True
     scoring_code_only: bool = False
     shap_only_mode: bool = False
