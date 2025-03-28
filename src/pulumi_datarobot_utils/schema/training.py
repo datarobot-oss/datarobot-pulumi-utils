@@ -199,7 +199,7 @@ class DatetimePartitioningArgs(Schema):
 
 class AnalyzeAndModelArgs(Schema):
     target: Any | None = None
-    mode: dr.AUTOPILOT_MODE = dr.AUTOPILOT_MODE.QUICK
+    mode: str = dr.AUTOPILOT_MODE.QUICK
     metric: Any | None = None
     worker_count: Any | None = None
     positive_class: Any | None = None
