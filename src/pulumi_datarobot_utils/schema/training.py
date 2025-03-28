@@ -95,7 +95,7 @@ class ProjectOptionsStrategy(StrEnum):
 
 class AutopilotOptions(Schema):
     blend_best_models: bool = True
-    mode: str = dr.AUTOPILOT_MODE.QUICK # TODO: Pydantic doesn't work well with datarobot.enums
+    mode: str = dr.AUTOPILOT_MODE.QUICK  # TODO: Pydantic doesn't work well with datarobot.enums
     run_leakage_removed_feature_list: bool = True
     scoring_code_only: bool = False
     shap_only_mode: bool = False
@@ -199,7 +199,7 @@ class DatetimePartitioningArgs(Schema):
 
 class AnalyzeAndModelArgs(Schema):
     target: Any | None = None
-    mode: str = dr.AUTOPILOT_MODE.QUICK # TODO: Pydantic doesn't work well with datarobot.enums
+    mode: str = dr.AUTOPILOT_MODE.QUICK  # TODO: Pydantic doesn't work well with datarobot.enums
     metric: Any | None = None
     worker_count: Any | None = None
     positive_class: Any | None = None

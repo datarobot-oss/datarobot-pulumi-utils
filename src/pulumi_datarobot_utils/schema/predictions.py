@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import Literal, Union
+from typing import Any, Literal, TypedDict, Union
 
 from pulumi_datarobot_utils.schema.base import Field, Schema, StrEnum
 
@@ -243,3 +243,22 @@ class BatchPredictionJobDefinitionsCreate(Schema):
     thresholdHigh: float | None = None
     thresholdLow: float | None = None
     timeseriesSettings: TimeSeriesSettings | None = None
+
+
+class BaselineValues(TypedDict, total=False):
+    value: float
+
+
+class CustomMetricArgs(Schema):
+    name: str
+    units: str
+    is_model_specific: bool
+    type: Any
+    directionality: Any
+    description: str | None = None
+    baseline_values: list[BaselineValues] | None = None
+    value_column_name: str | None = None
+    sample_count_column_name: str | None = None
+    timestamp_column_name: str | None = None
+    timestamp_format: str | None = None
+    batch_column_name: str | None = None
