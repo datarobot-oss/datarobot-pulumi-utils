@@ -13,10 +13,25 @@
 # limitations under the License.
 from __future__ import annotations
 
-from pulumi_datarobot_utils.schema.base import Schema
+from datarobot.enums import VectorDatabaseChunkingMethod, VectorDatabaseEmbeddingModel
+
+from datarobot_pulumi_utils.schema.base import Field, Schema
 
 
-class DatasetArgs(Schema):
+class ChunkingParameters(Schema):
+    embedding_model: VectorDatabaseEmbeddingModel | None = None
+    chunking_method: VectorDatabaseChunkingMethod | None = None
+    chunk_size: int | None = Field(ge=128, le=512)
+    chunk_overlap_percentage: int | None = None
+    separators: list[str] | None = None
+
+
+class VectorDatabaseArgs(Schema):
     resource_name: str
-    file_path: str  # TODO: consider to use pathlib.Path here
     name: str | None = None
+    chunking_parameters: ChunkingParameters
+
+
+class VectorDatabaseSettings(Schema):
+    max_documents_retrieved_per_prompt: int | None = None
+    max_tokens: int | None = None

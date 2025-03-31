@@ -16,7 +16,7 @@ from __future__ import annotations
 import pulumi
 from pydantic import Field, field_validator
 
-from pulumi_datarobot_utils.schema.base import Schema
+from datarobot_pulumi_utils.schema.base import Schema
 
 
 class ResourceBundle(Schema):

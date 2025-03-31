@@ -17,7 +17,7 @@ from typing import Literal
 
 import pulumi_datarobot as drp
 
-from pulumi_datarobot_utils.schema.base import Field, Schema
+from datarobot_pulumi_utils.schema.base import Field, Schema
 
 CredentialType = Literal["azure", "aws", "google", "api"]
 

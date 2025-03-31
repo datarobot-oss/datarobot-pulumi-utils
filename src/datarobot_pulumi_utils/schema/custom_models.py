@@ -17,8 +17,8 @@ from enum import Enum
 
 import pulumi_datarobot as drp
 
-from pulumi_datarobot_utils.schema.base import Schema, StrEnum
-from pulumi_datarobot_utils.schema.common import ResourceBundle
+from datarobot_pulumi_utils.schema.base import Schema, StrEnum
+from datarobot_pulumi_utils.schema.common import ResourceBundle
 
 
 class CustomModelResourceBundles(Enum):

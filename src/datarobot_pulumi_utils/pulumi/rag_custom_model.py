@@ -1,4 +1,4 @@
-# Copyright 2025 DataRobot, Inc.
+# Copyright 2024 DataRobot, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,39 +14,57 @@
 from __future__ import annotations
 
 import pulumi
-import pulumi_datarobot as drp
+import pulumi_datarobot as datarobot
 
-from pulumi_datarobot_utils.schema.custom_models import CustomModelArgs
-from pulumi_datarobot_utils.schema.llms import LLMBlueprintArgs, PlaygroundArgs
+from datarobot_pulumi_utils.schema.custom_models import CustomModelArgs
+from datarobot_pulumi_utils.schema.datasets import DatasetArgs
+from datarobot_pulumi_utils.schema.llms import LLMBlueprintArgs, PlaygroundArgs
+from datarobot_pulumi_utils.schema.vectordb import VectorDatabaseArgs
 
 
-class PlaygroundCustomModel(pulumi.ComponentResource):
+class RAGCustomModel(pulumi.ComponentResource):
     def __init__(
         self,
         resource_name: str,
-        use_case: drp.UseCase,
+        use_case: datarobot.UseCase,
+        dataset_args: DatasetArgs,
         playground_args: PlaygroundArgs,
+        vector_database_args: VectorDatabaseArgs,
         llm_blueprint_args: LLMBlueprintArgs,
-        runtime_parameter_values: list[drp.CustomModelRuntimeParameterValueArgs],
+        runtime_parameter_values: list[datarobot.CustomModelRuntimeParameterValueArgs],
+        guard_configurations: list[datarobot.CustomModelGuardConfigurationArgs],
         custom_model_args: CustomModelArgs,
-        guard_configurations: list[drp.CustomModelGuardConfigurationArgs] | None = None,
         opts: pulumi.ResourceOptions | None = None,
     ):
-        super().__init__("custom:datarobot:PlaygroundCustomModel", resource_name, None, opts)
+        super().__init__("custom:datarobot:RAGCustomModel", resource_name, None, opts)
 
-        self.playground = drp.Playground(
+        self.playground = datarobot.Playground(
             use_case_id=use_case.id,
             **playground_args.model_dump(mode="json"),
             opts=pulumi.ResourceOptions(parent=self),
         )
 
-        self.llm_blueprint = drp.LlmBlueprint(
-            playground_id=self.playground.id,
-            **llm_blueprint_args.model_dump(),
+        self.vdb_dataset = datarobot.DatasetFromFile(
+            use_case_ids=[use_case.id],
+            **dataset_args.model_dump(mode="json"),
             opts=pulumi.ResourceOptions(parent=self),
         )
 
-        self.custom_model = drp.CustomModel(
+        self.vector_database = datarobot.VectorDatabase(
+            dataset_id=self.vdb_dataset.id,
+            use_case_id=use_case.id,
+            **vector_database_args.model_dump(mode="json"),
+            opts=pulumi.ResourceOptions(parent=self),
+        )
+
+        self.llm_blueprint = datarobot.LlmBlueprint(
+            playground_id=self.playground.id,
+            vector_database_id=self.vector_database.id,
+            **llm_blueprint_args.model_dump(mode="json"),
+            opts=pulumi.ResourceOptions(parent=self),
+        )
+
+        self.custom_model = datarobot.CustomModel(
             source_llm_blueprint_id=self.llm_blueprint.id,
             runtime_parameter_values=runtime_parameter_values,
             guard_configurations=guard_configurations,
@@ -58,6 +76,8 @@ class PlaygroundCustomModel(pulumi.ComponentResource):
         self.register_outputs(
             {
                 "playground_id": self.playground.id,
+                "dataset_id": self.vdb_dataset.id,
+                "vector_database_id": self.vector_database.id,
                 "llm_blueprint_id": self.llm_blueprint.id,
                 "id": self.custom_model.id,
                 "version_id": self.custom_model.version_id,
@@ -68,6 +88,6 @@ class PlaygroundCustomModel(pulumi.ComponentResource):
     @pulumi.getter(name="versionId")
     def version_id(self) -> pulumi.Output[str]:
         """
-        The ID of the latest Playground Custom Model version.
+        The ID of the latest Custom Model version.
         """
         return self.custom_model.version_id

@@ -19,8 +19,8 @@ from typing import Any
 import datarobot as dr
 from pydantic import ConfigDict
 
-from pulumi_datarobot_utils.schema.base import Schema, StrEnum
-from pulumi_datarobot_utils.schema.common import Schedule
+from datarobot_pulumi_utils.schema.base import Schema, StrEnum
+from datarobot_pulumi_utils.schema.common import Schedule
 
 
 class CVMethod(StrEnum):

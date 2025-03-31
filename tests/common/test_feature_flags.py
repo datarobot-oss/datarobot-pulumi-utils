@@ -18,14 +18,14 @@ from unittest import mock
 import pulumi
 import pytest
 
-from pulumi_datarobot_utils.common import check_feature_flags
+from datarobot_pulumi_utils.common import check_feature_flags
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 def test__check_feature_flags__valid_flags():
     reqs_path = FIXTURES_DIR / "reqs.yaml"
 
-    with mock.patch("pulumi_datarobot_utils.common.feature_flags.fetch_flag_statuses") as feature_flag_status_mock:
+    with mock.patch("datarobot_pulumi_utils.common.feature_flags.fetch_flag_statuses") as feature_flag_status_mock:
         feature_flag_status_mock.return_value = {
             "ENABLE_MLOPS": True,
             "ENABLE_CUSTOM_INFERENCE_MODEL": True,
@@ -38,7 +38,7 @@ def test__check_feature_flags__valid_flags():
 def test__check_feature_flags__invalid_flag_state():
     reqs_path = FIXTURES_DIR / "reqs.yaml"
 
-    with mock.patch("pulumi_datarobot_utils.common.feature_flags.fetch_flag_statuses") as feature_flag_status_mock:
+    with mock.patch("datarobot_pulumi_utils.common.feature_flags.fetch_flag_statuses") as feature_flag_status_mock:
         feature_flag_status_mock.return_value = {
             "ENABLE_MLOPS": True,
             "ENABLE_CUSTOM_INFERENCE_MODEL": True,

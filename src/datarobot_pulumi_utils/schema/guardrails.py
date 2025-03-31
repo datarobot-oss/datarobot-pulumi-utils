@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from pulumi_datarobot_utils.schema.base import Schema, StrEnum
+from datarobot_pulumi_utils.schema.base import Schema, StrEnum
 
 
 class GuardrailTemplateNames(StrEnum):

@@ -18,7 +18,7 @@ from typing import Sequence
 import pulumi
 import pulumi_datarobot as drp
 
-from pulumi_datarobot_utils.schema.custom_models import (
+from datarobot_pulumi_utils.schema.custom_models import (
     CustomModelArgs,
     DeploymentArgs,
     RegisteredModelArgs,
