@@ -37,7 +37,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://datarobot.com"
-Source = "https://github.com/datarobot-oss/pulumi-datarobot-utils"
+Source = "https://github.com/datarobot-oss/datarobot-pulumi-utils"
 
 [dependency-groups]
 dev = [
