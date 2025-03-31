@@ -13,7 +13,13 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict, Union
+import sys
+from typing import Any, Literal, Union
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 from datarobot_pulumi_utils.schema.base import Field, Schema, StrEnum
 
