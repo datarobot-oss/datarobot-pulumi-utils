@@ -13,10 +13,13 @@
 # limitations under the License.
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Any
+
 import datarobot as dr
 from pydantic import ConfigDict
 
-from pulumi_datarobot_utils.schema.base import Field, Schema, StrEnum
+from pulumi_datarobot_utils.schema.base import Schema, StrEnum
 from pulumi_datarobot_utils.schema.common import Schedule
 
 
@@ -92,7 +95,7 @@ class ProjectOptionsStrategy(StrEnum):
 
 class AutopilotOptions(Schema):
     blend_best_models: bool = True
-    mode: dr.AUTOPILOT_MODE = dr.AUTOPILOT_MODE.QUICK
+    mode: str = dr.AUTOPILOT_MODE.QUICK  # TODO: Pydantic doesn't work well with datarobot.enums
     run_leakage_removed_feature_list: bool = True
     scoring_code_only: bool = False
     shap_only_mode: bool = False
@@ -110,7 +113,7 @@ class Periodicity(Schema):
 
 class RetrainingTrigger(Schema):
     min_interval_between_runs: str | None = None
-    schedule: Schedule = Field(default_factory=Schedule)
+    schedule: Schedule | None = None
     status_declines_to_failing: bool = True
     status_declines_to_warning: bool = True
     status_still_in_decline: bool | None = True
@@ -149,3 +152,134 @@ class DeploymentRetrainingPolicyArgs(Schema):
     project_options_strategy: str | None = None
     time_series_options: TimeSeriesOptions | None = None
     trigger: RetrainingTrigger | None = None
+
+
+class CalendarArgs(Schema):
+    name: str
+    country_code: str
+    start_date: str | datetime
+    end_date: str | datetime
+
+
+class DatetimePartitioningArgs(Schema):
+    model_config = ConfigDict(protected_namespaces=())
+
+    datetime_partition_column: str
+    autopilot_data_selection_method: str | None = None
+    validation_duration: str | None = None
+    holdout_start_date: Any | None = None
+    holdout_duration: str | None = None
+    disable_holdout: bool | None = None
+    gap_duration: str | None = None
+    number_of_backtests: int | None = None
+    backtests: Any | None = None
+    use_time_series: bool = False
+    default_to_known_in_advance: bool = False
+    default_to_do_not_derive: bool = False
+    feature_derivation_window_start: int | None = None
+    feature_derivation_window_end: int | None = None
+    feature_settings: Any | None = None
+    forecast_window_start: int | None = None
+    forecast_window_end: int | None = None
+    windows_basis_unit: str | None = None
+    treat_as_exponential: str | None = None
+    differencing_method: str | None = None
+    periodicities: Any | None = None
+    multiseries_id_columns: list[str] | None = None
+    use_cross_series_features: bool | None = None
+    aggregation_type: str | None = None
+    cross_series_group_by_columns: list[str] | None = None
+    calendar_id: str | None = None
+    holdout_end_date: Any | None = None
+    unsupervised_mode: bool = False
+    model_splits: int | None = None
+    allow_partial_history_time_series_predictions: bool = False
+    unsupervised_type: str | None = None
+
+
+class AnalyzeAndModelArgs(Schema):
+    target: Any | None = None
+    mode: str = dr.AUTOPILOT_MODE.QUICK  # TODO: Pydantic doesn't work well with datarobot.enums
+    metric: Any | None = None
+    worker_count: Any | None = None
+    positive_class: Any | None = None
+    partitioning_method: Any | None = None
+    featurelist_id: Any | None = None
+    advanced_options: Any | None = None
+    max_wait: int = dr.enums.DEFAULT_MAX_WAIT
+    target_type: Any | None = None
+    credentials: Any | None = None
+    feature_engineering_prediction_point: Any | None = None
+    unsupervised_mode: bool = False
+    relationships_configuration_id: Any | None = None
+    class_mapping_aggregation_settings: Any | None = None
+    segmentation_task_id: Any | None = None
+    unsupervised_type: Any | None = None
+    autopilot_cluster_list: Any | None = None
+    use_gpu: Any | None = None
+
+
+class AdvancedOptionsArgs(Schema):
+    model_config = ConfigDict(protected_namespaces=())
+
+    weights: str | None = None
+    response_cap: bool | float | None = None
+    blueprint_threshold: int | None = None
+    seed: int | None = None
+    smart_downsampled: bool | None = None
+    majority_downsampling_rate: float | None = None
+    offset: list[str] | None = None
+    exposure: str | None = None
+    accuracy_optimized_mb: bool | None = None
+    scaleout_modeling_mode: str | None = None
+    events_count: str | None = None
+    monotonic_increasing_featurelist_id: str | None = None
+    monotonic_decreasing_featurelist_id: str | None = None
+    only_include_monotonic_blueprints: bool | None = None
+    allowed_pairwise_interaction_groups: list[tuple[str, ...]] | None = None
+    blend_best_models: bool | None = None
+    scoring_code_only: bool | None = None
+    prepare_model_for_deployment: bool | None = None
+    consider_blenders_in_recommendation: bool | None = None
+    min_secondary_validation_model_count: int | None = None
+    shap_only_mode: bool | None = None
+    autopilot_data_sampling_method: str | None = None
+    run_leakage_removed_feature_list: bool | None = None
+    autopilot_with_feature_discovery: bool | None = False
+    feature_discovery_supervised_feature_reduction: bool | None = None
+    exponentially_weighted_moving_alpha: float | None = None
+    external_time_series_baseline_dataset_id: str | None = None
+    use_supervised_feature_reduction: bool | None = True
+    primary_location_column: str | None = None
+    protected_features: list[str] | None = None
+    preferable_target_value: str | None = None
+    fairness_metrics_set: str | None = None
+    fairness_threshold: str | None = None
+    bias_mitigation_feature_name: str | None = None
+    bias_mitigation_technique: str | None = None
+    include_bias_mitigation_feature_as_predictor_variable: bool | None = None
+    default_monotonic_increasing_featurelist_id: str | None = None
+    default_monotonic_decreasing_featurelist_id: str | None = None
+    model_group_id: str | None = None
+    model_regime_id: str | None = None
+    model_baselines: list[str] | None = None
+    incremental_learning_only_mode: bool | None = None
+    incremental_learning_on_best_model: bool | None = None
+    chunk_definition_id: str | None = None
+    incremental_learning_early_stopping_rounds: int | None = None
+
+
+class FeatureSettingConfig(Schema):
+    feature_name: str
+    known_in_advance: bool | None = None
+    do_not_derive: bool | None = None
+
+
+class AutopilotRunArgs(Schema):
+    name: str
+    create_from_dataset_config: dict[str, Any] | None = None
+    analyze_and_model_config: AnalyzeAndModelArgs | None = None
+    datetime_partitioning_config: DatetimePartitioningArgs | None = None
+    feature_settings_config: list[FeatureSettingConfig] | None = None
+    advanced_options_config: AdvancedOptionsArgs | None = None
+    user_defined_segment_id_columns: list[str] | None = None

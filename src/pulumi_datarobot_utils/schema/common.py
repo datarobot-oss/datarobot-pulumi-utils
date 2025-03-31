@@ -13,9 +13,8 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import Union
-
 import pulumi
+from pydantic import Field, field_validator
 
 from pulumi_datarobot_utils.schema.base import Schema
 
@@ -33,12 +32,22 @@ class UseCaseArgs(Schema):
     opts: pulumi.ResourceOptions | None = None
 
 
-CronExpr = Union[str, int]
-
-
 class Schedule(Schema):
-    dayOfMonth: list[CronExpr] = ["*"]  # TODO: are we sure it's a list?
-    dayOfWeek: list[CronExpr] = ["*"]
-    hour: list[CronExpr] = ["*"]
-    minute: list[CronExpr] = ["*"]
-    month: list[CronExpr] = ["*"]
+    day_of_months: list[str] = Field(
+        description='List of the days of the month to run the schedule. Use ["*"] for every day.'
+    )
+    day_of_weeks: list[str] = Field(
+        description='List of the days of the week to run the schedule. Use ["*"] for every day.'
+    )
+    hours: list[str] = Field(description='List of the hours to run the schedule. Use ["*"] for every hour.')
+    minutes: list[str] = Field(description='List of the minutes to run the schedule. Use ["*"] for every minute.')
+    months: list[str] = Field(
+        description='List of the months of the year to run the schedule. Use ["*"] for every month.'
+    )
+
+    @field_validator("*")
+    def validate_list(cls, v: list[str]) -> list[str]:
+        for item in v:
+            if item != "*" and not item.isdigit():
+                raise ValueError(f"Invalid value {item}. Must be '*' or a digit.")
+        return v

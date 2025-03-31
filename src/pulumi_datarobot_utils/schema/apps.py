@@ -66,6 +66,7 @@ class ApplicationTemplates(Enum):
 
 class ApplicationSourceArgs(Schema):
     resource_name: str
+    base_environment_id: str
     files: Any | None = None  # TODO: let's actually try to find out the type here
     folder_path: str | None = None
     name: str | None = None
