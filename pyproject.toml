@@ -1,5 +1,5 @@
 [project]
-name = "pulumi-datarobot-utils"
+name = "datarobot-pulumi-utils"
 dynamic = ["version"]
 description = "A set of Pulumi CustomResources and other utilities built on top of the pulumi-datarobot provider."
 readme = "README.md"
