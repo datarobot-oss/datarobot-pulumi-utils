@@ -18,8 +18,8 @@ from typing import Any
 import pulumi
 import pulumi_datarobot as datarobot
 
-from pulumi_datarobot_utils.schema.llms import LLMSettings
-from pulumi_datarobot_utils.schema.vectordb import VectorDatabaseSettings
+from datarobot_pulumi_utils.schema.llms import LLMSettings
+from datarobot_pulumi_utils.schema.vectordb import VectorDatabaseSettings
 
 
 class ProxyLLMBlueprint(pulumi.ComponentResource):

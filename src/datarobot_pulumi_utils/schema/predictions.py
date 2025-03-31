@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypedDict, Union
 
-from pulumi_datarobot_utils.schema.base import Field, Schema, StrEnum
+from datarobot_pulumi_utils.schema.base import Field, Schema, StrEnum
 
 
 class ChunkSizeTypes(StrEnum):

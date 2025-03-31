@@ -18,7 +18,7 @@ from unittest import mock
 import pulumi
 import pytest
 
-from pulumi_datarobot_utils.common import check_feature_flags
+from datarobot_pulumi_utils.common import check_feature_flags
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

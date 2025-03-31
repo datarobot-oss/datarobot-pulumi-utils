@@ -18,8 +18,8 @@ from typing import Any
 
 import datarobot as dr
 
-from pulumi_datarobot_utils.schema.base import Schema
-from pulumi_datarobot_utils.schema.common import ResourceBundle
+from datarobot_pulumi_utils.schema.base import Schema
+from datarobot_pulumi_utils.schema.common import ResourceBundle
 
 
 class CustomAppResourceBundles(Enum):

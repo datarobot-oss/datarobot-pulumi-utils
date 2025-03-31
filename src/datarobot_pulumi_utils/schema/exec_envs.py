@@ -15,7 +15,7 @@ from enum import Enum
 
 import datarobot as dr
 
-from pulumi_datarobot_utils.schema.base import Schema
+from datarobot_pulumi_utils.schema.base import Schema
 
 
 class RuntimeEnvironment(Schema):
