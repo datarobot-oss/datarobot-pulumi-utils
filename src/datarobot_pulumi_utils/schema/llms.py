@@ -15,9 +15,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-import pulumi_datarobot as drp
-
 from datarobot_pulumi_utils.schema.base import Field, Schema
+from datarobot_pulumi_utils.schema.vectordb import VectorDatabaseSettings
 
 CredentialType = Literal["azure", "aws", "google", "api"]
 
@@ -72,7 +71,7 @@ class LLMBlueprintArgs(Schema):
     resource_name: str
     description: str | None = None
     llm_id: str
-    llm_settings: drp.LlmBlueprintLlmSettingsArgs | None = None
+    llm_settings: LLMSettings | None = None
     name: str | None = None
     prompt_type: str | None = None
-    vector_database_settings: drp.LlmBlueprintVectorDatabaseSettingsArgs | None = None
+    vector_database_settings: VectorDatabaseSettings | None = None
