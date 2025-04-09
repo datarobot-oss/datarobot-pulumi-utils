@@ -49,6 +49,7 @@ class ProxyLLMBlueprint(pulumi.ComponentResource):
 
         if isinstance(llm_settings, dict):
             llm_settings = LLMSettings(**llm_settings)
+
         if isinstance(vector_database_settings, dict):
             vector_database_settings = VectorDatabaseSettings(**vector_database_settings)
 
