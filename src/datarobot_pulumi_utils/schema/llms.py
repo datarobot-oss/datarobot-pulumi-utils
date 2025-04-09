@@ -65,6 +65,7 @@ class PlaygroundArgs(Schema):
 class LLMSettings(Schema):
     system_prompt: str
     max_completion_length: int = Field(le=512)
+    temperature: float | None = Field(ge=0, le=1)
 
 
 class LLMBlueprintArgs(Schema):
