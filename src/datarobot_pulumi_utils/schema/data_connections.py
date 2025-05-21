@@ -35,7 +35,7 @@ class ExternalDataDriver(Schema):
                 raise ValueError(f"No driver found with canonical name containing {self.canonical_name}")
 
             latest_driver = max(
-                (driver for driver in matching_drivers if driver.version is not None), key=lambda d: d.version or ""
+                (driver for driver in matching_drivers if driver.id is not None), key=lambda d: d.id or ""
             )
             if latest_driver.id is None:
                 raise ValueError(f"Driver ID for {latest_driver.canonical_name} is None")
