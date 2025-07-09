@@ -119,6 +119,7 @@ class PapermillResource(dynamic.Resource):
     """
     Custom Pulumi resource for executing Jupyter notebooks with Papermill
     """
+
     result: Output[Dict[str, Any]]
 
     def __init__(
