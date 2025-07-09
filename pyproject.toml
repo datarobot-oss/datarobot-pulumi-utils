@@ -32,7 +32,8 @@ dependencies = [
     "pulumi-datarobot>=0.8.15",
     "pydantic>=2.7.4,<3.0",
     "datarobot>=3.5.2,<4.0",
-    "PyYAML>=6.0.2,<7.0"
+    "PyYAML>=6.0.2,<7.0",
+    "papermill>=2.6.0,<3"
 ]
 
 [project.urls]
@@ -174,3 +175,7 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = "datarobot.*"
 implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = "papermill.*"
+ignore_missing_imports = true
