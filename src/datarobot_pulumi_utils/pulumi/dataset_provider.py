@@ -40,6 +40,4 @@ class DataRobotDatasetResource(Resource):
         dataset_id: Input[str],
         opts: Optional[pulumi.ResourceOptions] = None,
     ) -> None:
-        super().__init__(
-            DataRobotDatasetProvider(), name, {"dataset_id": dataset_id}, opts
-        )
+        super().__init__(DataRobotDatasetProvider(), name, {"dataset_id": dataset_id}, opts)

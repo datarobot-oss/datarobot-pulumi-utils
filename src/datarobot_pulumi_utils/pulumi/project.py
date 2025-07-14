@@ -42,9 +42,7 @@ class DataRobotProjectResource(Resource):
         project_id: Input[str],
         opts: Optional[pulumi.ResourceOptions] = None,
     ) -> None:
-        super().__init__(
-            DataRobotProjectProvider(), name, {"project_id": project_id}, opts
-        )
+        super().__init__(DataRobotProjectProvider(), name, {"project_id": project_id}, opts)
 
 
 class LeaderboardModelProvider(ResourceProvider):
@@ -70,6 +68,4 @@ class LeaderboardModelResource(Resource):
         model_id: Input[str],
         opts: Optional[pulumi.ResourceOptions] = None,
     ) -> None:
-        super().__init__(
-            LeaderboardModelProvider(), name, {"project_id": project_id, "model_id": model_id}, opts
-        )
+        super().__init__(LeaderboardModelProvider(), name, {"project_id": project_id, "model_id": model_id}, opts)

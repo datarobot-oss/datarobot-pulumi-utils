@@ -58,9 +58,7 @@ class RefreshPolicyProvider(ResourceProvider):
         dataset_id, refresh_id = id.split(":")
         client.delete(f"datasets/{dataset_id}/refreshJobs/{refresh_id}")
 
-    def update(
-        self, id: str, olds: Dict[str, Any], news: Dict[str, Any]
-    ) -> UpdateResult:
+    def update(self, id: str, olds: Dict[str, Any], news: Dict[str, Any]) -> UpdateResult:
         self.delete(id, olds)
         create_result = self.create(news)
         return UpdateResult(outs=create_result.outs)
