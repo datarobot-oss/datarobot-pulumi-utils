@@ -14,8 +14,8 @@
 
 from typing import Any, Dict, Optional
 
-from datarobot.models.deployment.challenger import Challenger
 import pulumi
+from datarobot.models.deployment.challenger import Challenger
 from pulumi import Input
 from pulumi.dynamic import CreateResult, Resource, ResourceProvider
 
