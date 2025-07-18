@@ -16,26 +16,27 @@ from typing import Any, Dict, Optional
 
 import datarobot as dr
 import pulumi
-from pulumi import Input
+from pulumi import Input, Output
 from pulumi.dynamic import CreateResult, Resource, ResourceProvider
 
 
 class DataRobotProjectProvider(ResourceProvider):
     def create(self, props: Dict[str, Any]) -> CreateResult:
         # No-op
-        return CreateResult(id_=props["project_id"], outs={})
+        return CreateResult(id_=props["project_id"], outs={"project_id": props["project_id"]})
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
-        project_id = id
         try:
-            project = dr.Project.get(project_id)
+            project = dr.Project.get(id)
             project.delete()
-            pulumi.log.info(f"Deleted DataRobot project {project_id}")
+            pulumi.log.info(f"Deleted DataRobot project {id}")
         except Exception as e:
-            pulumi.log.warn(f"Failed to delete DataRobot project {project_id}: {e}")
+            pulumi.log.warn(f"Failed to delete DataRobot project {id}: {e}")
 
 
 class DataRobotProjectResource(Resource):
+    project_id: Output[str]
+
     def __init__(
         self,
         name: str,
@@ -48,7 +49,10 @@ class DataRobotProjectResource(Resource):
 class LeaderboardModelProvider(ResourceProvider):
     def create(self, props: Dict[str, Any]) -> CreateResult:
         # No-op
-        return CreateResult(id_=f"{props['project_id']}/{props['model_id']}", outs={})
+        return CreateResult(
+            id_=f"{props['project_id']}/{props['model_id']}",
+            outs={"project_id": props["project_id"], "model_id": props["model_id"]},
+        )
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
         project_id, model_id = id.split("/", 1)
@@ -61,6 +65,9 @@ class LeaderboardModelProvider(ResourceProvider):
 
 
 class LeaderboardModelResource(Resource):
+    project_id: Output[str]
+    model_id: Output[str]
+
     def __init__(
         self,
         name: str,
@@ -68,4 +75,12 @@ class LeaderboardModelResource(Resource):
         model_id: Input[str],
         opts: Optional[pulumi.ResourceOptions] = None,
     ) -> None:
-        super().__init__(LeaderboardModelProvider(), name, {"project_id": project_id, "model_id": model_id}, opts)
+        super().__init__(
+            LeaderboardModelProvider(),
+            name,
+            {
+                "project_id": project_id,
+                "model_id": model_id,
+            },
+            opts,
+        )
