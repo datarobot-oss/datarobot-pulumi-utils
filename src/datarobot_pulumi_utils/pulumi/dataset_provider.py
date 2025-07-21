@@ -26,8 +26,12 @@ class DataRobotDatasetProvider(ResourceProvider):
         return CreateResult(id_=props["dataset_id"], outs={})
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
+        managed = props.get("managed", False)
+        if not managed:
+            pulumi.log.info(f"Skipping deletion of unmanaged dataset with ID: {id}")
+            return
         try:
-            pulumi.log.info(f"Attempting to delete dataset with ID: {id}")
+            pulumi.log.info(f"Attempting to delete managed dataset with ID: {id}")
             dr.Dataset.delete(id)
         except Exception:
             pass
@@ -38,6 +42,7 @@ class DataRobotDatasetResource(Resource):
         self,
         name: str,
         dataset_id: Input[str],
+        managed: bool = False,
         opts: Optional[pulumi.ResourceOptions] = None,
     ) -> None:
-        super().__init__(DataRobotDatasetProvider(), name, {"dataset_id": dataset_id}, opts)
+        super().__init__(DataRobotDatasetProvider(), name, {"dataset_id": dataset_id, "managed": managed}, opts)
