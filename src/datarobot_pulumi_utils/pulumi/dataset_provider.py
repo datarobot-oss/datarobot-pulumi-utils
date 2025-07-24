@@ -39,21 +39,26 @@ class DataRobotDatasetProvider(ResourceProvider):
             old_value = normalized_olds.get(key)
             if old_value != new_value:
                 changes = True
-                if key == "dataset_id":
+                if key == "dataset_id" and old_value != new_value:
                     replaces.append(key)
 
-        return DiffResult(changes=changes, replaces=replaces, delete_before_replace=True)
+        return DiffResult(changes=changes, replaces=replaces)
 
     def create(self, props: Dict[str, Any]) -> CreateResult:
         normalized_props = self._normalize_props(props)
-        return CreateResult(id_=normalized_props["dataset_id"], outs={"dataset_id": normalized_props["dataset_id"]})
+        return CreateResult(
+            id_=normalized_props["dataset_id"],
+            outs={"dataset_id": normalized_props["dataset_id"], "managed": normalized_props["managed"]},
+        )
 
     def update(self, id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> UpdateResult:
         normalized_news = self._normalize_props(_news)
-        return UpdateResult(outs={"dataset_id": normalized_news["dataset_id"]})
+        return UpdateResult(outs={"dataset_id": normalized_news["dataset_id"], "managed": normalized_news["managed"]})
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
-        managed = props.get("managed", False)
+        normalized_props = self._normalize_props(props)
+        managed = normalized_props.get("managed", False)
+
         if not managed:
             pulumi.log.info(f"Skipping deletion of unmanaged dataset with ID: {id}")
             return
