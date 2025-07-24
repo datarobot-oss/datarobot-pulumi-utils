@@ -17,7 +17,7 @@ from typing import Any, Dict, Optional
 import datarobot as dr
 import pulumi
 from pulumi import Input
-from pulumi.dynamic import CreateResult, Resource, ResourceProvider, dynamic
+from pulumi.dynamic import CreateResult, DiffResult, Resource, ResourceProvider, UpdateResult
 
 
 class DataRobotDatasetProvider(ResourceProvider):
@@ -28,7 +28,7 @@ class DataRobotDatasetProvider(ResourceProvider):
             "managed": props.get("managed", False) if props.get("managed") is not None else False,
         }
 
-    def diff(self, _id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> dynamic.DiffResult:
+    def diff(self, _id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> DiffResult:
         normalized_olds = self._normalize_props(_olds)
         normalized_news = self._normalize_props(_news)
 
@@ -42,15 +42,15 @@ class DataRobotDatasetProvider(ResourceProvider):
                 if key == "dataset_id":
                     replaces.append(key)
 
-        return dynamic.DiffResult(changes=changes, replaces=replaces, delete_before_replace=True)
+        return DiffResult(changes=changes, replaces=replaces, delete_before_replace=True)
 
     def create(self, props: Dict[str, Any]) -> CreateResult:
         normalized_props = self._normalize_props(props)
         return CreateResult(id_=normalized_props["dataset_id"], outs={"dataset_id": normalized_props["dataset_id"]})
 
-    def update(self, id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> dynamic.UpdateResult:
+    def update(self, id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> UpdateResult:
         normalized_news = self._normalize_props(_news)
-        return dynamic.UpdateResult(outs={"dataset_id": normalized_news["dataset_id"]})
+        return UpdateResult(outs={"dataset_id": normalized_news["dataset_id"]})
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
         managed = props.get("managed", False)
