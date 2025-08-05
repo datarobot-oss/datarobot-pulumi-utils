@@ -51,7 +51,7 @@ class LeaderboardModelProvider(ResourceProvider):
         # No-op
         return CreateResult(
             id_=f"{props['project_id']}/{props['model_id']}",
-            outs={"project_id": props["project_id"], "model_id": props["model_id"]},
+            outs={"project_id": props["project_id"], "model_id": props["model_id"], "model_type": props["model_type"]},
         )
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
@@ -67,12 +67,14 @@ class LeaderboardModelProvider(ResourceProvider):
 class LeaderboardModelResource(Resource):
     project_id: Output[str]
     model_id: Output[str]
+    model_type: Output[str]
 
     def __init__(
         self,
         name: str,
         project_id: Input[str],
         model_id: Input[str],
+        model_type: Input[str],
         opts: Optional[pulumi.ResourceOptions] = None,
     ) -> None:
         super().__init__(
@@ -81,6 +83,7 @@ class LeaderboardModelResource(Resource):
             {
                 "project_id": project_id,
                 "model_id": model_id,
+                "model_type": model_type,
             },
             opts,
         )
