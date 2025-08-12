@@ -12,3 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .export_collector import ExportCollector, default_collector, export, finalize
+
+__all__ = ["default_collector", "ExportCollector", "export", "finalize"]
