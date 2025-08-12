@@ -150,6 +150,9 @@ class ExportCollector:
         data = self._apply_redaction(resolved)
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
         if self.atomic:
+            # Note, there are edge cases where this might not actually be atomic despite the `self.atomic` flag.
+            # If we see issues like this in the wild, take a look at:
+            #  https://python-atomicwrites.readthedocs.io/en/latest/_modules/atomicwrites.html#atomic_write
             fd, tmp_name = tempfile.mkstemp(prefix="pulumi_exports_", suffix=".json", dir=str(self.output_path.parent))
             try:
                 with os.fdopen(fd, "w", encoding="utf-8") as f:
