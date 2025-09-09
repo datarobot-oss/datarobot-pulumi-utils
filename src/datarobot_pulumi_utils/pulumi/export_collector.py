@@ -58,7 +58,6 @@ from threading import Lock
 from typing import Any, Callable, Dict, Optional
 
 import pulumi
-import pulumi.dynamic
 
 Redactor = Callable[[str, Any], Any]
 
@@ -100,10 +99,15 @@ class ExportCollector:
         self.atomic = atomic
         self._finalized = False
         self.ensure_resolution = ensure_resolution
-        # Keep a reference to aggregate Output to avoid GC differences across Python versions.
-        self._aggregate_output: Optional[pulumi.Output[Any]] = None
-        self._applied_output: Optional[pulumi.Output[Any]] = None  # retain aggregate.apply result
-        self._value_taps: list[pulumi.Output[Any]] = []  # retain per-export tap outputs for logging
+        # Incremental resolution tracking
+        self._resolved_values: Dict[str, Any] = {}
+        self._pending: set[str] = set()
+        self._finalize_invoked = False
+        self._final_file_written = False
+        self._subset_filter: Optional[set[str]] = None
+        self._last_write_time: float = 0.0
+        self._min_write_interval_sec: float = float(os.getenv("DATAROBOT_PULUMI_EXPORTER_MIN_INTERVAL", "0.2"))
+        self._incremental_enabled = os.getenv("DATAROBOT_PULUMI_EXPORTER_INCREMENTAL", "1") not in {"0","false","False"}
         # Enable verbose debug logs by default (can be disabled by setting env var to 0)
         self._debug_enabled = os.getenv("DATAROBOT_PULUMI_EXPORTER_DEBUG", "1") not in {"0", "false", "False"}
         self._log_debug(
@@ -114,64 +118,14 @@ class ExportCollector:
             ensure_resolution=self.ensure_resolution,
         )
 
-    # --- dynamic provider (internal) ---
-    class _WriteExportsProvider(pulumi.dynamic.ResourceProvider):  # type: ignore[misc]
-        def __init__(self, outer: "ExportCollector") -> None:  # pragma: no cover - minimal
-            self.outer = outer
-
-        def create(self, inputs: Dict[str, Any]):  # type: ignore[override]
-            # This runs only after all input Outputs are resolved by the engine.
-            try:
-                data = inputs.get("data", {}) or {}
-                path = Path(inputs["outputPath"]) if "outputPath" in inputs else self.outer.output_path
-                self.outer._log_debug(
-                    "dynamic-create-start", keys=list(data.keys()), output_path=str(path.resolve())
-                )
-                redacted = self.outer._apply_redaction(dict(data))
-                path.parent.mkdir(parents=True, exist_ok=True)
-                tmp_fd, tmp_name = tempfile.mkstemp(prefix="pulumi_exports_", suffix=".json", dir=str(path.parent))
-                try:
-                    with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
-                        json.dump(redacted, f, indent=4, default=str)
-                    Path(tmp_name).replace(path)
-                except Exception:
-                    try:
-                        if Path(tmp_name).exists():
-                            Path(tmp_name).unlink()
-                    finally:
-                        raise
-                size = path.stat().st_size if path.exists() else -1
-                self.outer._log_info(
-                    "dynamic-create-complete", size=size, output_path=str(path.resolve())
-                )
-            except Exception as e:  # pragma: no cover
-                self.outer._log_error(
-                    "dynamic-create-error", error=str(e), traceback=traceback.format_exc()
-                )
-                raise
-            return pulumi.dynamic.CreateResult(id_="export-writer", outs={})  # noqa: F821
-
-    class _WriteExportsResource(pulumi.dynamic.Resource):  # type: ignore[misc]
-        def __init__(
-            self,
-            outer: "ExportCollector",
-            name: str,
-            output_path: Path,
-            data: pulumi.Output[Dict[str, Any]],
-        ):
-            super().__init__(
-                ExportCollector._WriteExportsProvider(outer),
-                name,
-                {"outputPath": str(output_path), "data": data},
-                opts=pulumi.ResourceOptions(additional_secret_outputs=[]),
-            )
-
+    # (Removed dynamic provider approach in favor of simpler per-output taps.)
 
     def export(self, name: str, value: Any) -> pulumi.Output[Any]:
         """Register an export to be written later and forward to Pulumi's own export registry."""
         out = pulumi.Output.from_input(value)
         with self._lock:
             self._exports[name] = out
+            self._pending.add(name)
         try:
             pulumi.export(name, out)
             self._log_debug("export-registered", name=name, value_type=str(type(value)))
@@ -180,6 +134,20 @@ class ExportCollector:
                 "export-failed", name=name, error=str(e), traceback=traceback.format_exc()
             )
             raise
+        # Per-output tap: when this resolves, record its value & maybe write snapshot.
+        def _capture(val: Any, key=name):  # capture key in default
+            with self._lock:
+                self._resolved_values[key] = val
+                self._log_debug(
+                    "value-resolved", name=key, has_value=val is not None, type=str(type(val))
+                )
+                if key in self._pending:
+                    self._pending.remove(key)
+                self._maybe_write_snapshot(reason="incremental" if self._incremental_enabled else "capture", force=self._incremental_enabled)
+                self._maybe_finalize_if_complete()
+            return val
+        # Keep reference to tap output to avoid GC discarding the apply.
+        _ = out.apply(_capture)
         return out
 
     def finalize(
@@ -200,67 +168,29 @@ class ExportCollector:
             return
         try:
             dry_run = pulumi.runtime.is_dry_run()
-        except Exception:  # pragma: no cover - defensive
+        except Exception:  # pragma: no cover
             dry_run = False
             self._log_warn("finalize-dry-run-check-failed", traceback=traceback.format_exc())
         if self.skip_preview and dry_run and not force:
             self._log_info("finalize-skip-preview", dry_run=dry_run, force=force)
             return
         with self._lock:
-            total = len(self._exports)
             if not self._exports:
                 self._log_info("finalize-no-exports")
                 return
-            exports = {k: v for k, v in self._exports.items() if subset is None or k in subset}
-            if subset is not None:
-                self._log_debug(
-                    "finalize-subset-filter", subset=subset, before=total, after=len(exports)
-                )
-            if not exports:
-                self._log_info("finalize-no-exports-after-subset")
-                self._finalized = True
-                return
-            aggregate = pulumi.Output.all(**exports)
-            # Retain reference on self to avoid GC on some Python versions / runtimes.
-            self._aggregate_output = aggregate
-        self._log_debug("finalize-aggregate-created", keys=list(exports.keys()))
-        try:
-            # Primary mechanism: dynamic resource to perform write after resolution.
-            if self.ensure_resolution:
-                dyn = ExportCollector._WriteExportsResource(
-                    self,
-                    name="export-writer",  # resource name
-                    output_path=self.output_path,
-                    data=aggregate,
-                )
-                self._writer_resource = dyn  # type: ignore[attr-defined]
-                self._log_debug("finalize-dynamic-writer-created")
-
-            # Secondary (legacy) mechanism: apply-based write (kept for redundancy & logging).
-            applied = aggregate.apply(lambda resolved: self._write(resolved, on_written))
-            # Per-export taps to observe resolution timing; keep references to avoid GC.
-            taps: list[pulumi.Output[Any]] = []
-            for _k, _v in exports.items():
-                def _mk_logger(name: str):  # closure factory to bind name
-                    return lambda val: (self._log_debug(
-                        "value-resolved", name=name, has_value=val is not None, type=str(type(val))
-                    ), val)[1]
-                taps.append(_v.apply(_mk_logger(_k)))
-            self._value_taps = taps
-            self._applied_output = applied
-            if self.ensure_resolution:
-                # Internal export to tie legacy apply chain; optional now.
-                internal = applied.apply(lambda _: "ok")
-                pulumi.export("__export_collector_internal__", internal)
-                self._internal_output = internal  # type: ignore[attr-defined]
-                self._log_debug("finalize-internal-export")
-        except Exception as e:  # pragma: no cover
-            self._log_error(
-                "finalize-apply-failed", error=str(e), traceback=traceback.format_exc()
+            self._finalize_invoked = True
+            self._subset_filter = set(subset) if subset else None
+            total = len(self._exports)
+            resolved = len(self._resolved_values)
+            self._log_debug(
+                "finalize-progress", total=total, resolved=resolved, pending=list(self._pending)
             )
-            raise
+            # Attempt immediate snapshot if any resolved.
+            if resolved:
+                self._maybe_write_snapshot(reason="finalize")
+            # If all already resolved, mark done.
+            self._maybe_finalize_if_complete()
         self._finalized = True
-        self._log_debug("finalize-scheduled-write")
 
     # ---- internal ----
     def _apply_redaction(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -324,6 +254,39 @@ class ExportCollector:
             except Exception as e:  # pragma: no cover
                 self._log_warn("on_written-callback-error", error=str(e))
         return None  # Pulumi requires a return
+
+    # Snapshot writing from incremental taps/finalize
+    def _maybe_write_snapshot(self, reason: str, force: bool = False) -> None:
+        if self._final_file_written and not force:
+            return
+        now = time.time()
+        if not force and (now - self._last_write_time) < self._min_write_interval_sec:
+            return
+        data = dict(self._resolved_values)
+        if self._subset_filter is not None:
+            data = {k: v for k, v in data.items() if k in self._subset_filter}
+        if not data:
+            return
+        self._last_write_time = now
+        self._log_debug(
+            "snapshot-attempt", keys=list(data.keys()), reason=reason, complete=len(self._pending)==0
+        )
+        try:
+            self._write(data, on_written=None)
+        except Exception as e:  # pragma: no cover
+            self._log_warn("snapshot-write-error", error=str(e))
+
+    def _maybe_finalize_if_complete(self) -> None:
+        if not self._finalize_invoked:
+            return
+        if self._pending:
+            return
+        if self._final_file_written:
+            return
+        # All resolved: final snapshot write (force) + mark
+        self._log_info("all-resolved")
+        self._maybe_write_snapshot(reason="all-resolved", force=True)
+        self._final_file_written = True
 
     # ---- logging helpers ----
     def _emit(self, level: str, event: str, **fields: Any) -> None:
