@@ -155,7 +155,7 @@ class ExportCollector:
     def _write_current_values(self, on_written: Optional[Callable[[Path], None]] = None) -> None:
         """Write currently resolved values to file."""
         data = dict(self._resolved_values)
-        if hasattr(self, '_subset_filter') and self._subset_filter is not None:
+        if hasattr(self, "_subset_filter") and self._subset_filter is not None:
             data = {k: v for k, v in data.items() if k in self._subset_filter}
         if not data:
             return
