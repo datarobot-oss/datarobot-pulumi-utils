@@ -76,7 +76,7 @@ class ExportCollector:
 
     def __init__(
         self,
-        output_path: Path = Path("../pulumi_exports.json"),
+        output_path: Path = Path("../pulumi_config.json"),
         redactor: Optional[Redactor] = None,
         skip_preview: bool = True,
         atomic: bool = True,
@@ -95,6 +95,9 @@ class ExportCollector:
         self.skip_preview = skip_preview
         self.atomic = atomic
         self._finalized = False
+        # Track resolved values for incremental writing
+        self._resolved_values: Dict[str, Any] = {}
+        self._finalize_invoked = False
 
     def export(self, name: str, value: Any) -> pulumi.Output[Any]:
         """
@@ -105,6 +108,17 @@ class ExportCollector:
         with self._lock:
             self._exports[name] = out
         pulumi.export(name, out)
+
+        # Capture resolved values incrementally
+        def _capture(val: Any) -> Any:
+            with self._lock:
+                self._resolved_values[name] = val
+                # Write snapshot if finalize has been called and we have values
+                if self._finalize_invoked and self._resolved_values:
+                    self._write_current_values()
+            return val
+
+        out.apply(_capture)
         return out
 
     def finalize(
@@ -126,21 +140,26 @@ class ExportCollector:
         with self._lock:
             if not self._exports:
                 return
-            # Filter subset if requested
-            exports = {k: v for k, v in self._exports.items() if subset is None or k in subset}
-            if not exports:
-                # Nothing matched subset; mark finalized to prevent repeated attempts.
-                self._finalized = True
-                return
-            aggregate = pulumi.Output.all(**exports)
-        aggregate.apply(lambda resolved: self._write(resolved, on_written))
+            self._finalize_invoked = True
+            self._subset_filter = set(subset) if subset else None
+            # Write any values we already have
+            if self._resolved_values:
+                self._write_current_values(on_written)
         self._finalized = True
 
-    # ---- internal ----
     def _apply_redaction(self, data: Dict[str, Any]) -> Dict[str, Any]:
         if not self.redactor:
             return data
         return {k: self.redactor(k, v) for k, v in data.items()}
+
+    def _write_current_values(self, on_written: Optional[Callable[[Path], None]] = None) -> None:
+        """Write currently resolved values to file."""
+        data = dict(self._resolved_values)
+        if hasattr(self, "_subset_filter") and self._subset_filter is not None:
+            data = {k: v for k, v in data.items() if k in self._subset_filter}
+        if not data:
+            return
+        self._write(data, on_written)
 
     def _write(
         self,
