@@ -58,6 +58,7 @@ from threading import Lock
 from typing import Any, Callable, Dict, Optional
 
 import pulumi
+import pulumi.dynamic
 
 Redactor = Callable[[str, Any], Any]
 
@@ -78,7 +79,7 @@ class ExportCollector:
 
     def __init__(
         self,
-        output_path: Path = Path("pulumi_config.json"),  # Default to CWD; previous default escaped project root.
+        output_path: Path = Path("../pulumi_config.json"),
         redactor: Optional[Redactor] = None,
         skip_preview: bool = True,
         atomic: bool = True,
@@ -101,6 +102,8 @@ class ExportCollector:
         self.ensure_resolution = ensure_resolution
         # Keep a reference to aggregate Output to avoid GC differences across Python versions.
         self._aggregate_output: Optional[pulumi.Output[Any]] = None
+        self._applied_output: Optional[pulumi.Output[Any]] = None  # retain aggregate.apply result
+        self._value_taps: list[pulumi.Output[Any]] = []  # retain per-export tap outputs for logging
         # Enable verbose debug logs by default (can be disabled by setting env var to 0)
         self._debug_enabled = os.getenv("DATAROBOT_PULUMI_EXPORTER_DEBUG", "1") not in {"0", "false", "False"}
         self._log_debug(
@@ -110,6 +113,59 @@ class ExportCollector:
             atomic=self.atomic,
             ensure_resolution=self.ensure_resolution,
         )
+
+    # --- dynamic provider (internal) ---
+    class _WriteExportsProvider(pulumi.dynamic.ResourceProvider):  # type: ignore[misc]
+        def __init__(self, outer: "ExportCollector") -> None:  # pragma: no cover - minimal
+            self.outer = outer
+
+        def create(self, inputs: Dict[str, Any]):  # type: ignore[override]
+            # This runs only after all input Outputs are resolved by the engine.
+            try:
+                data = inputs.get("data", {}) or {}
+                path = Path(inputs["outputPath"]) if "outputPath" in inputs else self.outer.output_path
+                self.outer._log_debug(
+                    "dynamic-create-start", keys=list(data.keys()), output_path=str(path.resolve())
+                )
+                redacted = self.outer._apply_redaction(dict(data))
+                path.parent.mkdir(parents=True, exist_ok=True)
+                tmp_fd, tmp_name = tempfile.mkstemp(prefix="pulumi_exports_", suffix=".json", dir=str(path.parent))
+                try:
+                    with os.fdopen(tmp_fd, "w", encoding="utf-8") as f:
+                        json.dump(redacted, f, indent=4, default=str)
+                    Path(tmp_name).replace(path)
+                except Exception:
+                    try:
+                        if Path(tmp_name).exists():
+                            Path(tmp_name).unlink()
+                    finally:
+                        raise
+                size = path.stat().st_size if path.exists() else -1
+                self.outer._log_info(
+                    "dynamic-create-complete", size=size, output_path=str(path.resolve())
+                )
+            except Exception as e:  # pragma: no cover
+                self.outer._log_error(
+                    "dynamic-create-error", error=str(e), traceback=traceback.format_exc()
+                )
+                raise
+            return pulumi.dynamic.CreateResult(id_="export-writer", outs={})  # noqa: F821
+
+    class _WriteExportsResource(pulumi.dynamic.Resource):  # type: ignore[misc]
+        def __init__(
+            self,
+            outer: "ExportCollector",
+            name: str,
+            output_path: Path,
+            data: pulumi.Output[Dict[str, Any]],
+        ):
+            super().__init__(
+                ExportCollector._WriteExportsProvider(outer),
+                name,
+                {"outputPath": str(output_path), "data": data},
+                opts=pulumi.ResourceOptions(additional_secret_outputs=[]),
+            )
+
 
     def export(self, name: str, value: Any) -> pulumi.Output[Any]:
         """Register an export to be written later and forward to Pulumi's own export registry."""
@@ -169,10 +225,34 @@ class ExportCollector:
             self._aggregate_output = aggregate
         self._log_debug("finalize-aggregate-created", keys=list(exports.keys()))
         try:
-            applied = aggregate.apply(lambda resolved: self._write(resolved, on_written))
+            # Primary mechanism: dynamic resource to perform write after resolution.
             if self.ensure_resolution:
-                # Export an internal output to ensure dependency graph retains chain.
-                pulumi.export("__export_collector_internal__", applied.apply(lambda _: "ok"))
+                dyn = ExportCollector._WriteExportsResource(
+                    self,
+                    name="export-writer",  # resource name
+                    output_path=self.output_path,
+                    data=aggregate,
+                )
+                self._writer_resource = dyn  # type: ignore[attr-defined]
+                self._log_debug("finalize-dynamic-writer-created")
+
+            # Secondary (legacy) mechanism: apply-based write (kept for redundancy & logging).
+            applied = aggregate.apply(lambda resolved: self._write(resolved, on_written))
+            # Per-export taps to observe resolution timing; keep references to avoid GC.
+            taps: list[pulumi.Output[Any]] = []
+            for _k, _v in exports.items():
+                def _mk_logger(name: str):  # closure factory to bind name
+                    return lambda val: (self._log_debug(
+                        "value-resolved", name=name, has_value=val is not None, type=str(type(val))
+                    ), val)[1]
+                taps.append(_v.apply(_mk_logger(_k)))
+            self._value_taps = taps
+            self._applied_output = applied
+            if self.ensure_resolution:
+                # Internal export to tie legacy apply chain; optional now.
+                internal = applied.apply(lambda _: "ok")
+                pulumi.export("__export_collector_internal__", internal)
+                self._internal_output = internal  # type: ignore[attr-defined]
                 self._log_debug("finalize-internal-export")
         except Exception as e:  # pragma: no cover
             self._log_error(
