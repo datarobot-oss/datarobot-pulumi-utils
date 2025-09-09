@@ -51,6 +51,8 @@ __all__ = [
 import json
 import os
 import tempfile
+import time
+import traceback
 from pathlib import Path
 from threading import Lock
 from typing import Any, Callable, Dict, Optional
@@ -76,10 +78,11 @@ class ExportCollector:
 
     def __init__(
         self,
-        output_path: Path = Path("../pulumi_exports.json"),
+        output_path: Path = Path("pulumi_config.json"),  # Default to CWD; previous default escaped project root.
         redactor: Optional[Redactor] = None,
         skip_preview: bool = True,
         atomic: bool = True,
+        ensure_resolution: bool = True,
     ):
         """
         :param output_path: Path to write final exports JSON.
@@ -95,16 +98,32 @@ class ExportCollector:
         self.skip_preview = skip_preview
         self.atomic = atomic
         self._finalized = False
+        self.ensure_resolution = ensure_resolution
+        # Keep a reference to aggregate Output to avoid GC differences across Python versions.
+        self._aggregate_output: Optional[pulumi.Output[Any]] = None
+        # Enable verbose debug logs by default (can be disabled by setting env var to 0)
+        self._debug_enabled = os.getenv("DATAROBOT_PULUMI_EXPORTER_DEBUG", "1") not in {"0", "false", "False"}
+        self._log_debug(
+            "init",
+            output_path=str(self.output_path.resolve()),
+            skip_preview=self.skip_preview,
+            atomic=self.atomic,
+            ensure_resolution=self.ensure_resolution,
+        )
 
     def export(self, name: str, value: Any) -> pulumi.Output[Any]:
-        """
-        Register an export to be written later.
-        Returns the Output for chaining.
-        """
+        """Register an export to be written later and forward to Pulumi's own export registry."""
         out = pulumi.Output.from_input(value)
         with self._lock:
             self._exports[name] = out
-        pulumi.export(name, out)
+        try:
+            pulumi.export(name, out)
+            self._log_debug("export-registered", name=name, value_type=str(type(value)))
+        except Exception as e:  # pragma: no cover - defensive
+            self._log_error(
+                "export-failed", name=name, error=str(e), traceback=traceback.format_exc()
+            )
+            raise
         return out
 
     def finalize(
@@ -119,22 +138,49 @@ class ExportCollector:
         force: write even during preview.
         on_written: callback invoked with final path after write.
         """
+        self._log_debug("finalize-called", subset=subset, force=force)
         if self._finalized:
+            self._log_debug("finalize-skip-already-finalized")
             return
-        if self.skip_preview and pulumi.runtime.is_dry_run() and not force:
+        try:
+            dry_run = pulumi.runtime.is_dry_run()
+        except Exception:  # pragma: no cover - defensive
+            dry_run = False
+            self._log_warn("finalize-dry-run-check-failed", traceback=traceback.format_exc())
+        if self.skip_preview and dry_run and not force:
+            self._log_info("finalize-skip-preview", dry_run=dry_run, force=force)
             return
         with self._lock:
+            total = len(self._exports)
             if not self._exports:
+                self._log_info("finalize-no-exports")
                 return
-            # Filter subset if requested
             exports = {k: v for k, v in self._exports.items() if subset is None or k in subset}
+            if subset is not None:
+                self._log_debug(
+                    "finalize-subset-filter", subset=subset, before=total, after=len(exports)
+                )
             if not exports:
-                # Nothing matched subset; mark finalized to prevent repeated attempts.
+                self._log_info("finalize-no-exports-after-subset")
                 self._finalized = True
                 return
             aggregate = pulumi.Output.all(**exports)
-        aggregate.apply(lambda resolved: self._write(resolved, on_written))
+            # Retain reference on self to avoid GC on some Python versions / runtimes.
+            self._aggregate_output = aggregate
+        self._log_debug("finalize-aggregate-created", keys=list(exports.keys()))
+        try:
+            applied = aggregate.apply(lambda resolved: self._write(resolved, on_written))
+            if self.ensure_resolution:
+                # Export an internal output to ensure dependency graph retains chain.
+                pulumi.export("__export_collector_internal__", applied.apply(lambda _: "ok"))
+                self._log_debug("finalize-internal-export")
+        except Exception as e:  # pragma: no cover
+            self._log_error(
+                "finalize-apply-failed", error=str(e), traceback=traceback.format_exc()
+            )
+            raise
         self._finalized = True
+        self._log_debug("finalize-scheduled-write")
 
     # ---- internal ----
     def _apply_redaction(self, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -147,30 +193,89 @@ class ExportCollector:
         resolved: Dict[str, Any],
         on_written: Optional[Callable[[Path], None]],
     ) -> None:
+        start = time.time()
+        self._log_debug(
+            "write-start",
+            keys=list(resolved.keys()),
+            count=len(resolved),
+            output_path=str(self.output_path.resolve()),
+        )
         data = self._apply_redaction(resolved)
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        except Exception as e:  # pragma: no cover
+            self._log_error("write-mkdir-failed", error=str(e), traceback=traceback.format_exc())
+            raise
         if self.atomic:
-            # Note, there are edge cases where this might not actually be atomic despite the `self.atomic` flag.
-            # If we see issues like this in the wild, take a look at:
-            #  https://python-atomicwrites.readthedocs.io/en/latest/_modules/atomicwrites.html#atomic_write
-            fd, tmp_name = tempfile.mkstemp(prefix="pulumi_exports_", suffix=".json", dir=str(self.output_path.parent))
+            fd, tmp_name = tempfile.mkstemp(
+                prefix="pulumi_exports_", suffix=".json", dir=str(self.output_path.parent)
+            )
             try:
                 with os.fdopen(fd, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=4, default=str)
                 Path(tmp_name).replace(self.output_path)
-            except Exception:
-                # Best effort cleanup; ignore secondary errors.
+                self._log_debug("write-atomic-replace", tmp=tmp_name, final=str(self.output_path.resolve()))
+            except Exception as e:  # pragma: no cover
+                self._log_error(
+                    "write-atomic-failed", error=str(e), tmp=tmp_name, traceback=traceback.format_exc()
+                )
                 try:
                     if Path(tmp_name).exists():
                         Path(tmp_name).unlink()
                 finally:
                     raise
         else:
-            with self.output_path.open("w") as f:
-                json.dump(data, f, indent=4, default=str)
+            try:
+                with self.output_path.open("w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=4, default=str)
+                self._log_debug("write-non-atomic-done")
+            except Exception as e:  # pragma: no cover
+                self._log_error("write-failed", error=str(e), traceback=traceback.format_exc())
+                raise
+        try:
+            size = self.output_path.stat().st_size
+        except Exception:  # pragma: no cover
+            size = -1
+        duration_ms = int((time.time() - start) * 1000)
+        self._log_info("write-complete", size=size, ms=duration_ms)
         if on_written:
-            on_written(self.output_path)
+            try:
+                on_written(self.output_path)
+            except Exception as e:  # pragma: no cover
+                self._log_warn("on_written-callback-error", error=str(e))
         return None  # Pulumi requires a return
+
+    # ---- logging helpers ----
+    def _emit(self, level: str, event: str, **fields: Any) -> None:
+        if level == "debug" and not self._debug_enabled:
+            return
+        payload = {"component": "ExportCollector", "event": event, **fields}
+        line = json.dumps(payload, default=str)
+        try:  # Use pulumi.log if available
+            if level == "debug":
+                pulumi.log.debug(line)
+            elif level == "info":
+                pulumi.log.info(line)
+            elif level == "warn":
+                pulumi.log.warn(line)
+            elif level == "error":
+                pulumi.log.error(line)
+            else:
+                pulumi.log.info(line)
+        except Exception:  # pragma: no cover - fallback when not in engine context
+            print(f"[{level.upper()}] {line}")
+
+    def _log_debug(self, event: str, **fields: Any) -> None:
+        self._emit("debug", event, **fields)
+
+    def _log_info(self, event: str, **fields: Any) -> None:
+        self._emit("info", event, **fields)
+
+    def _log_warn(self, event: str, **fields: Any) -> None:
+        self._emit("warn", event, **fields)
+
+    def _log_error(self, event: str, **fields: Any) -> None:
+        self._emit("error", event, **fields)
 
 
 # Default singleton collector & functional facade
