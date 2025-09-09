@@ -76,7 +76,7 @@ class ExportCollector:
 
     def __init__(
         self,
-        output_path: Path = Path("../pulumi_exports.json"),
+        output_path: Path = Path("../pulumi_config.json"),
         redactor: Optional[Redactor] = None,
         skip_preview: bool = True,
         atomic: bool = True,

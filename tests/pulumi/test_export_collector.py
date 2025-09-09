@@ -20,7 +20,7 @@ def test_collector_basic(mock_export, mock_from_input, mock_is_dry_run, tmp_path
     def create_mock_output(value):
         mock_output = MagicMock()
         mock_output.apply = MagicMock()
-        
+
         # When apply is called, immediately call the function with the resolved value
         def mock_apply(func):
             result = func(value)
@@ -41,7 +41,7 @@ def test_collector_basic(mock_export, mock_from_input, mock_is_dry_run, tmp_path
 
     # Verify that pulumi.export was called
     assert mock_export.called, "pulumi.export was not called."
-    
+
     # Verify that from_input was called with the correct value
     mock_from_input.assert_called_with("abc")
 
@@ -65,7 +65,7 @@ def test_collector_multiple_exports(mock_export, mock_from_input, mock_is_dry_ru
     def create_mock_output(value):
         mock_output = MagicMock()
         mock_output.apply = MagicMock()
-        
+
         # When apply is called, immediately call the function with the resolved value
         def mock_apply(func):
             result = func(value)
@@ -110,7 +110,7 @@ def test_collector_subset_filter(mock_export, mock_from_input, mock_is_dry_run, 
     def create_mock_output(value):
         mock_output = MagicMock()
         mock_output.apply = MagicMock()
-        
+
         # When apply is called, immediately call the function with the resolved value
         def mock_apply(func):
             result = func(value)
@@ -152,7 +152,7 @@ def test_collector_skip_preview(mock_export, mock_from_input, mock_is_dry_run, t
     def create_mock_output(value):
         mock_output = MagicMock()
         mock_output.apply = MagicMock()
-        
+
         def mock_apply(func):
             result = func(value)
             return result
@@ -187,7 +187,7 @@ def test_collector_force_preview(mock_export, mock_from_input, mock_is_dry_run, 
     def create_mock_output(value):
         mock_output = MagicMock()
         mock_output.apply = MagicMock()
-        
+
         def mock_apply(func):
             result = func(value)
             return result
@@ -225,7 +225,7 @@ def test_collector_redactor(mock_export, mock_from_input, mock_is_dry_run, tmp_p
     def create_mock_output(value):
         mock_output = MagicMock()
         mock_output.apply = MagicMock()
-        
+
         def mock_apply(func):
             result = func(value)
             return result
