@@ -24,20 +24,23 @@ client = dr.Client()
 
 
 def schedule_dataset_refresh(
-    dataset_id: str, credential_id: str, name: str, schedule: Union[Dict[str, Any], str]
+    dataset_id: str, credential_id: Optional[str], name: str, schedule: Union[Dict[str, Any], str]
 ) -> str:
     """Schedule a dataset refresh job"""
     if isinstance(schedule, str):
         schedule = json.loads(schedule)
 
+    payload = {
+        "enabled": True,
+        "name": name,
+        "schedule": schedule,
+    }
+    if credential_id is not None:
+        payload["credentialId"] = credential_id
+
     resp = client.post(
         f"datasets/{dataset_id}/refreshJobs/",
-        {
-            "credentialId": credential_id,
-            "enabled": True,
-            "name": name,
-            "schedule": schedule,
-        },
+        payload,
     )
     data = resp.json()
     return str(data["jobId"])
@@ -46,7 +49,7 @@ def schedule_dataset_refresh(
 class RefreshPolicyProvider(ResourceProvider):
     def create(self, props: Dict[str, Any]) -> CreateResult:
         dataset_id = props["dataset_id"]
-        credential_id = props["credential_id"]
+        credential_id = props.get("credential_id")
         name = props.get("name", "Data Refresh Job")
         schedule = props.get("schedule", "{}")
         refresh_id = schedule_dataset_refresh(dataset_id, credential_id, name, schedule)
@@ -69,14 +72,15 @@ class RefreshPolicyResource(pulumi.dynamic.Resource):
         self,
         name: str,
         dataset_id: Input[str],
-        credential_id: Input[str],
+        credential_id: Optional[Input[str]] = None,
         schedule: Optional[Union[Dict[str, Any], str]] = None,
         opts: Optional[pulumi.ResourceOptions] = None,
     ) -> None:
         props = {
             "dataset_id": dataset_id,
-            "credential_id": credential_id,
             "name": name,
             "schedule": schedule,
         }
+        if credential_id is not None:
+            props["credential_id"] = credential_id
         super().__init__(RefreshPolicyProvider(), name, props, opts)
