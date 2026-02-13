@@ -34,14 +34,10 @@ def resolve_execution_environment_version(
     if requested_version_id:
         requested_version_id = requested_version_id.strip("'\"")
     if not re.match(r"^[a-f0-9]{24}$", str(requested_version_id or "")):
-        pulumi.info(
-            "No valid execution environment version ID provided, using latest version."
-        )
+        pulumi.info("No valid execution environment version ID provided, using latest version.")
         return None
     try:
-        version = dr.ExecutionEnvironmentVersion.get(
-            execution_environment_id, str(requested_version_id)
-        )
+        version = dr.ExecutionEnvironmentVersion.get(execution_environment_id, str(requested_version_id))
         if version.build_status == EXECUTION_ENVIRONMENT_VERSION_BUILD_STATUS.SUCCESS:
             return version.id
         pulumi.warn(
