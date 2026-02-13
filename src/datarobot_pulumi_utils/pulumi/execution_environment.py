@@ -16,8 +16,8 @@ import re
 from typing import Optional
 
 import datarobot as dr
-from datarobot.enums import EXECUTION_ENVIRONMENT_VERSION_BUILD_STATUS
 import pulumi
+from datarobot.enums import EXECUTION_ENVIRONMENT_VERSION_BUILD_STATUS
 
 
 def resolve_execution_environment_version(
