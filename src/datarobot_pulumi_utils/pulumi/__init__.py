@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .execution_environment import resolve_execution_environment_version
 from .export_collector import ExportCollector, default_collector, export, finalize
 
-__all__ = ["default_collector", "ExportCollector", "export", "finalize"]
+__all__ = [
+    "default_collector",
+    "ExportCollector",
+    "export",
+    "finalize",
+    "resolve_execution_environment_version",
+]
