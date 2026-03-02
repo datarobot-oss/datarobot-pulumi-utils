@@ -24,7 +24,7 @@ from pulumi import Input, Output, dynamic
 
 class PapermillProvider(dynamic.ResourceProvider):
     """
-    Custom Pulumi resource provider for executing notebooks with Papermill
+    Custom Pulumi resource provider for executing Jupyter notebooks
     """
 
     def diff(self, _id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> dynamic.DiffResult:
@@ -71,7 +71,7 @@ class PapermillProvider(dynamic.ResourceProvider):
                 pulumi.log.warn(f"Warning: Could not clean up result file {result_file}: {e}")
 
     def _execute_notebook(self, props: Dict[str, Any]) -> dynamic.CreateResult:
-        """Execute the notebook with Papermill"""
+        """Execute the notebook with nbclient"""
         input_path = pathlib.Path(props["input_path"])
         output_path = pathlib.Path(props["output_path"]) if "output_path" in props else None
         parameters = props.get("parameters", {})
@@ -125,7 +125,7 @@ class PapermillProvider(dynamic.ResourceProvider):
 
 class PapermillResource(dynamic.Resource):
     """
-    Custom Pulumi resource for executing Jupyter notebooks with Papermill
+    Custom Pulumi resource for executing Jupyter notebooks
     """
 
     result: Output[Dict[str, Any]]
