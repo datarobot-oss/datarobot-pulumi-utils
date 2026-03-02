@@ -38,9 +38,9 @@ class PapermillProvider(dynamic.ResourceProvider):
             or not os.path.exists(_news.get("result_file", ""))
         ):
             return dynamic.DiffResult(changes=True)
-        else:
-            # No changes needed, return no changes
-            return dynamic.DiffResult(changes=False)
+
+        # No changes needed, return no changes
+        return dynamic.DiffResult(changes=False)
 
     def create(self, props: Dict[str, Any]) -> dynamic.CreateResult:
         """Execute notebook during resource creation"""

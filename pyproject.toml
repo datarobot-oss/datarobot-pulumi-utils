@@ -35,6 +35,7 @@ dependencies = [
     "PyYAML>=6.0.2,<7.0",
     "nbclient>=0.7.0,<1.0",
     "nbformat>=5.1.0,<6.0",
+    "ipykernel>=6.0.0,<8.0",
 ]
 
 [project.urls]
