@@ -1,17 +1,30 @@
+# Copyright 2026 DataRobot, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import os
 import pathlib
-import sys
 from typing import Any, Dict, Optional
 
-import papermill as pm
+import nbformat
 import pulumi
 import yaml
+from nbclient import NotebookClient
 from pulumi import Input, Output, dynamic
 
 
 class PapermillProvider(dynamic.ResourceProvider):
     """
-    Custom Pulumi resource provider for executing notebooks with Papermill
+    Custom Pulumi resource provider for executing Jupyter notebooks
     """
 
     def diff(self, _id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> dynamic.DiffResult:
@@ -25,9 +38,9 @@ class PapermillProvider(dynamic.ResourceProvider):
             or not os.path.exists(_news.get("result_file", ""))
         ):
             return dynamic.DiffResult(changes=True)
-        else:
-            # No changes needed, return no changes
-            return dynamic.DiffResult(changes=False)
+
+        # No changes needed, return no changes
+        return dynamic.DiffResult(changes=False)
 
     def create(self, props: Dict[str, Any]) -> dynamic.CreateResult:
         """Execute notebook during resource creation"""
@@ -58,7 +71,7 @@ class PapermillProvider(dynamic.ResourceProvider):
                 pulumi.log.warn(f"Warning: Could not clean up result file {result_file}: {e}")
 
     def _execute_notebook(self, props: Dict[str, Any]) -> dynamic.CreateResult:
-        """Execute the notebook with Papermill"""
+        """Execute the notebook with nbclient"""
         input_path = pathlib.Path(props["input_path"])
         output_path = pathlib.Path(props["output_path"]) if "output_path" in props else None
         parameters = props.get("parameters", {})
@@ -73,29 +86,24 @@ class PapermillProvider(dynamic.ResourceProvider):
             os.environ[key] = str(value)
 
         try:
-            # Execute notebook with Papermill
+            # Execute notebook with nbclient
             pulumi.log.info(f"Executing notebook: {input_path}")
             pulumi.log.info(f"Parameters: {parameters}")
 
-            pm.execute_notebook(
-                input_path=input_path,
-                output_path=output_path,
-                cwd=cwd,
-                log_output=False,
-                progress_bar=False,
-                stderr_file=sys.stderr,
-                stdout_file=sys.stdout,
-            )
+            nb = nbformat.read(str(input_path), as_version=4)  # type: ignore[no-untyped-call]
+            NotebookClient(nb, resources={"metadata": {"path": str(cwd)}}).execute()
+            if output_path:
+                nbformat.write(nb, str(output_path))  # type: ignore[no-untyped-call]
 
             pulumi.log.info(f"Notebook executed successfully: {input_path}")
 
             result_from_file: Dict[str, Any] = {}
 
             if not os.path.exists(result_file):
-                with open(result_file, "w") as f:
+                with open(result_file, "w", encoding="utf-8") as f:
                     yaml.dump(result_from_file, f)
             else:
-                with open(result_file) as f:
+                with open(result_file, encoding="utf-8") as f:
                     result_from_file = yaml.safe_load(f)
 
             return dynamic.CreateResult(
@@ -117,7 +125,7 @@ class PapermillProvider(dynamic.ResourceProvider):
 
 class PapermillResource(dynamic.Resource):
     """
-    Custom Pulumi resource for executing Jupyter notebooks with Papermill
+    Custom Pulumi resource for executing Jupyter notebooks
     """
 
     result: Output[Dict[str, Any]]

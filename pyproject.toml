@@ -33,7 +33,9 @@ dependencies = [
     "pydantic>=2.7.4,<3.0",
     "datarobot>=3.5.2,<4.0",
     "PyYAML>=6.0.2,<7.0",
-    "papermill>=2.6.0,<3"
+    "nbclient>=0.7.0,<1.0",
+    "nbformat>=5.1.0,<6.0",
+    "ipykernel>=6.0.0,<8.0",
 ]
 
 [project.urls]
@@ -175,10 +177,6 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = "datarobot.*"
 implicit_reexport = true
-
-[[tool.mypy.overrides]]
-module = "papermill.*"
-ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 filterwarnings = [

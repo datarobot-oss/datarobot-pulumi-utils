@@ -25,7 +25,7 @@ tasks:
     desc: 🧪 Run the tests
     cmds:
       - echo "🧪 Running the tests"
-      - uv run coverage run -m pytest $TESTDIR $SRCDIR
+      - uv run coverage run -m pytest -vvv $TESTDIR $SRCDIR
 
   copyright:
     aliases: [license]
