@@ -36,13 +36,17 @@ def _mock_client(external_url: str) -> MagicMock:
 
 
 class TestGetDatarobotUrlTier1ExplicitOverride:
-    def test_returns_override_url(self, monkeypatch):
+    def test_returns_override_url_with_api_v2(self, monkeypatch):
         monkeypatch.setenv("DATAROBOT_WEB_SERVER_URL", "https://override.example.com")
-        assert get_datarobot_url() == "https://override.example.com"
+        assert get_datarobot_url() == "https://override.example.com/api/v2"
 
-    def test_strips_trailing_slash(self, monkeypatch):
+    def test_strips_trailing_slash_and_appends_api_v2(self, monkeypatch):
         monkeypatch.setenv("DATAROBOT_WEB_SERVER_URL", "https://override.example.com/")
-        assert get_datarobot_url() == "https://override.example.com"
+        assert get_datarobot_url() == "https://override.example.com/api/v2"
+
+    def test_does_not_double_append_api_v2(self, monkeypatch):
+        monkeypatch.setenv("DATAROBOT_WEB_SERVER_URL", "https://override.example.com/api/v2")
+        assert get_datarobot_url() == "https://override.example.com/api/v2"
 
     def test_override_skips_api_call(self, monkeypatch):
         monkeypatch.setenv("DATAROBOT_WEB_SERVER_URL", "https://override.example.com")
@@ -52,23 +56,32 @@ class TestGetDatarobotUrlTier1ExplicitOverride:
 
 
 class TestGetDatarobotUrlTier2ClientConfig:
-    def test_returns_external_url_from_client_config(self, monkeypatch):
+    def test_returns_external_url_from_client_config_with_api_v2(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "http://datarobot-nginx/api/v2")
         with patch(
             "datarobot_pulumi_utils.common.urls.dr.client.get_client",
             return_value=_mock_client("https://external.example.com"),
         ):
-            assert get_datarobot_url() == "https://external.example.com"
+            assert get_datarobot_url() == "https://external.example.com/api/v2"
 
-    def test_strips_trailing_slash_from_client_config(self, monkeypatch):
+    def test_strips_trailing_slash_and_appends_api_v2(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "http://datarobot-nginx/api/v2")
         with patch(
             "datarobot_pulumi_utils.common.urls.dr.client.get_client",
             return_value=_mock_client("https://external.example.com/"),
         ):
-            assert get_datarobot_url() == "https://external.example.com"
+            assert get_datarobot_url() == "https://external.example.com/api/v2"
+
+    def test_does_not_double_append_api_v2(self, monkeypatch):
+        monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
+        monkeypatch.setenv("DATAROBOT_ENDPOINT", "http://datarobot-nginx/api/v2")
+        with patch(
+            "datarobot_pulumi_utils.common.urls.dr.client.get_client",
+            return_value=_mock_client("https://external.example.com/api/v2"),
+        ):
+            assert get_datarobot_url() == "https://external.example.com/api/v2"
 
     def test_falls_through_when_client_not_configured(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
@@ -78,7 +91,7 @@ class TestGetDatarobotUrlTier2ClientConfig:
             side_effect=Exception("client not initialised"),
         ):
             result = get_datarobot_url()
-        assert result == "https://app.datarobot.com"
+        assert result == "https://app.datarobot.com/api/v2"
 
     def test_falls_through_on_network_error(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
@@ -90,33 +103,33 @@ class TestGetDatarobotUrlTier2ClientConfig:
             return_value=client,
         ):
             result = get_datarobot_url()
-        assert result == "https://app.datarobot.com"
+        assert result == "https://app.datarobot.com/api/v2"
 
 
 class TestGetDatarobotUrlTier3Fallback:
-    def test_strips_api_v2_suffix(self, monkeypatch):
+    def test_keeps_api_v2_suffix(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.delenv("DATAROBOT_API_TOKEN", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2")
-        assert get_datarobot_url() == "https://app.datarobot.com"
+        assert get_datarobot_url() == "https://app.datarobot.com/api/v2"
 
-    def test_strips_trailing_slash_before_api_v2(self, monkeypatch):
+    def test_strips_trailing_slash_preserves_api_v2(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.delenv("DATAROBOT_API_TOKEN", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2/")
-        assert get_datarobot_url() == "https://app.datarobot.com"
+        assert get_datarobot_url() == "https://app.datarobot.com/api/v2"
 
-    def test_airgapped_internal_url_returns_base(self, monkeypatch):
+    def test_airgapped_internal_url_returns_endpoint_with_api_v2(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.delenv("DATAROBOT_API_TOKEN", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "http://datarobot-nginx/api/v2")
-        assert get_datarobot_url() == "http://datarobot-nginx"
+        assert get_datarobot_url() == "http://datarobot-nginx/api/v2"
 
     def test_default_endpoint_when_env_unset(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.delenv("DATAROBOT_API_TOKEN", raising=False)
         monkeypatch.delenv("DATAROBOT_ENDPOINT", raising=False)
-        assert get_datarobot_url() == "https://app.datarobot.com"
+        assert get_datarobot_url() == "https://app.datarobot.com/api/v2"
 
 
 # ---------------------------------------------------------------------------
@@ -125,12 +138,13 @@ class TestGetDatarobotUrlTier3Fallback:
 
 
 class TestGetDeploymentUrl:
-    def test_uses_external_url(self, monkeypatch):
+    def test_uses_external_url_without_api_v2(self, monkeypatch):
+        """get_deployment_url produces a web console URL, so /api/v2 must be stripped."""
         monkeypatch.setenv("DATAROBOT_WEB_SERVER_URL", "https://dr.example.com")
         result = get_deployment_url("abc123")
         assert result == "https://dr.example.com/console-nextgen/deployments/abc123/"
 
-    def test_fallback_base_url(self, monkeypatch):
+    def test_fallback_base_url_without_api_v2(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.delenv("DATAROBOT_API_TOKEN", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2")
