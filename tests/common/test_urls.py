@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from threading import Thread
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -26,26 +23,11 @@ from datarobot_pulumi_utils.common.urls import get_datarobot_url, get_deployment
 # ---------------------------------------------------------------------------
 
 
-def _make_client_config_server(external_url: str) -> tuple[HTTPServer, int]:
-    """Spin up a minimal HTTP server that returns a /clientConfig/ response."""
-
-    class Handler(BaseHTTPRequestHandler):
-        def do_GET(self):  # noqa: N802
-            body = json.dumps({"EXTERNAL_WEB_SERVER_URL": external_url}).encode()
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-
-        def log_message(self, *args):  # suppress test output
-            pass
-
-    server = HTTPServer(("127.0.0.1", 0), Handler)
-    port = server.server_address[1]
-    thread = Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    return server, port
+def _mock_client(external_url: str) -> MagicMock:
+    """Return a mock DR client whose GET /clientConfig/ yields ``external_url``."""
+    client = MagicMock()
+    client.get.return_value.json.return_value = {"EXTERNAL_WEB_SERVER_URL": external_url}
+    return client
 
 
 # ---------------------------------------------------------------------------
@@ -64,50 +46,50 @@ class TestGetDatarobotUrlTier1ExplicitOverride:
 
     def test_override_skips_api_call(self, monkeypatch):
         monkeypatch.setenv("DATAROBOT_WEB_SERVER_URL", "https://override.example.com")
-        monkeypatch.setenv("DATAROBOT_API_TOKEN", "tok")
-        with patch("urllib.request.urlopen") as mock_open:
+        with patch("datarobot_pulumi_utils.common.urls.dr.client.get_client") as mock_get_client:
             get_datarobot_url()
-            mock_open.assert_not_called()
+            mock_get_client.assert_not_called()
 
 
 class TestGetDatarobotUrlTier2ClientConfig:
     def test_returns_external_url_from_client_config(self, monkeypatch):
-        server, port = _make_client_config_server("https://external.example.com")
-        try:
-            monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
-            monkeypatch.setenv("DATAROBOT_ENDPOINT", f"http://127.0.0.1:{port}/api/v2")
-            monkeypatch.setenv("DATAROBOT_API_TOKEN", "testtoken")
-            result = get_datarobot_url()
-            assert result == "https://external.example.com"
-        finally:
-            server.shutdown()
+        monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
+        monkeypatch.setenv("DATAROBOT_ENDPOINT", "http://datarobot-nginx/api/v2")
+        with patch(
+            "datarobot_pulumi_utils.common.urls.dr.client.get_client",
+            return_value=_mock_client("https://external.example.com"),
+        ):
+            assert get_datarobot_url() == "https://external.example.com"
 
     def test_strips_trailing_slash_from_client_config(self, monkeypatch):
-        server, port = _make_client_config_server("https://external.example.com/")
-        try:
-            monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
-            monkeypatch.setenv("DATAROBOT_ENDPOINT", f"http://127.0.0.1:{port}/api/v2")
-            monkeypatch.setenv("DATAROBOT_API_TOKEN", "testtoken")
-            result = get_datarobot_url()
-            assert result == "https://external.example.com"
-        finally:
-            server.shutdown()
-
-    def test_skips_api_call_when_no_token(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
-        monkeypatch.delenv("DATAROBOT_API_TOKEN", raising=False)
+        monkeypatch.setenv("DATAROBOT_ENDPOINT", "http://datarobot-nginx/api/v2")
+        with patch(
+            "datarobot_pulumi_utils.common.urls.dr.client.get_client",
+            return_value=_mock_client("https://external.example.com/"),
+        ):
+            assert get_datarobot_url() == "https://external.example.com"
+
+    def test_falls_through_when_client_not_configured(self, monkeypatch):
+        monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2")
-        with patch("urllib.request.urlopen") as mock_open:
-            get_datarobot_url()
-            mock_open.assert_not_called()
+        with patch(
+            "datarobot_pulumi_utils.common.urls.dr.client.get_client",
+            side_effect=Exception("client not initialised"),
+        ):
+            result = get_datarobot_url()
+        assert result == "https://app.datarobot.com"
 
     def test_falls_through_on_network_error(self, monkeypatch):
         monkeypatch.delenv("DATAROBOT_WEB_SERVER_URL", raising=False)
         monkeypatch.setenv("DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2")
-        monkeypatch.setenv("DATAROBOT_API_TOKEN", "tok")
-        with patch("urllib.request.urlopen", side_effect=OSError("connection refused")):
+        client = MagicMock()
+        client.get.side_effect = OSError("connection refused")
+        with patch(
+            "datarobot_pulumi_utils.common.urls.dr.client.get_client",
+            return_value=client,
+        ):
             result = get_datarobot_url()
-        # Should fall through to tier 3
         assert result == "https://app.datarobot.com"
 
 

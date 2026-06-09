@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import logging
 import os
-import urllib.request
-from urllib.parse import urlsplit
+
+import datarobot as dr
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +33,8 @@ def get_datarobot_url() -> str:
        Set this when you know the external URL and want to skip the API call
        (e.g. in CI/CD where the token may not be available yet, or for testing).
     2. ``/clientConfig/`` API endpoint → ``EXTERNAL_WEB_SERVER_URL`` field.
-       Called automatically when ``DATAROBOT_API_TOKEN`` is present.  Works in
-       both standard and airgapped environments.
+       Called automatically via the DataRobot SDK client.  Works in both
+       standard and airgapped environments.
     3. Strip ``/api/v2`` from ``DATAROBOT_ENDPOINT`` — fallback that preserves
        the existing behaviour for standard (non-airgapped) deployments.
 
@@ -50,25 +49,19 @@ def get_datarobot_url() -> str:
         return url.rstrip("/")
 
     endpoint = os.getenv("DATAROBOT_ENDPOINT", "https://app.datarobot.com/api/v2").rstrip("/")
-    api_token = os.getenv("DATAROBOT_API_TOKEN", "")
 
     # 2. Auto-detect via /clientConfig/ (handles airgapped environments)
-    if api_token:
-        try:
-            req = urllib.request.Request(
-                f"{endpoint}/clientConfig/",
-                headers={"Authorization": f"Bearer {api_token}"},
-            )
-            with urllib.request.urlopen(req, timeout=5) as resp:  # noqa: S310
-                data = json.loads(resp.read())
-                if external_url := data.get("EXTERNAL_WEB_SERVER_URL"):
-                    return external_url.rstrip("/")
-        except Exception:
-            logger.debug(
-                "Could not fetch EXTERNAL_WEB_SERVER_URL from %s/clientConfig/; "
-                "falling back to DATAROBOT_ENDPOINT.",
-                endpoint,
-            )
+    try:
+        client = dr.client.get_client()
+        data = client.get("clientConfig/").json()
+        if external_url := data.get("EXTERNAL_WEB_SERVER_URL"):
+            return external_url.rstrip("/")
+    except Exception:
+        logger.debug(
+            "Could not fetch EXTERNAL_WEB_SERVER_URL from %s/clientConfig/; "
+            "falling back to DATAROBOT_ENDPOINT.",
+            endpoint,
+        )
 
     # 3. Fallback: strip /api/v2 from DATAROBOT_ENDPOINT
     return endpoint.removesuffix("/api/v2")
