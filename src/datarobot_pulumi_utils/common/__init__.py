@@ -12,5 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .feature_flags import check_feature_flags
+from .urls import get_datarobot_url
 
-__all__ = ("check_feature_flags",)
+__all__ = (
+    "check_feature_flags",
+    "get_datarobot_url",
+)
