@@ -46,20 +46,20 @@ class QueryDatasetProvider(ResourceProvider):
         # Generator settings
         target = props.get("target")
         multiseries_id_columns = props.get("multiseries_id_columns", [])
-        datetime_partition_column = props.get("datetime_partition_column")
-        time_unit = props.get("time_unit")
+        datetime_partition_column: Any = props.get("datetime_partition_column")
+        time_unit: Any = props.get("time_unit")
         time_step = props.get("time_step", 1)
         default_numeric_aggregation_method = props.get("default_numeric_aggregation_method", "sum")
         default_categorical_aggregation_method = props.get("default_categorical_aggregation_method", "last")
 
         # Create the query generator dataset
-        query_dataset = QueryGeneratorDataset(  # type: ignore[no-untyped-call]
+        query_dataset = QueryGeneratorDataset(
             alias=alias,
             dataset_id=dataset_id,
         )
 
         # Create the generator settings
-        settings = QueryGeneratorSettings(  # type: ignore[no-untyped-call]
+        settings = QueryGeneratorSettings(
             target=target,
             multiseries_id_columns=multiseries_id_columns,
             datetime_partition_column=datetime_partition_column,
@@ -70,7 +70,7 @@ class QueryDatasetProvider(ResourceProvider):
         )
 
         # Create the query generator
-        generator = dr.DataEngineQueryGenerator.create(  # type: ignore[no-untyped-call]
+        generator = dr.DataEngineQueryGenerator.create(
             generator_type=generator_type,
             datasets=[query_dataset],
             generator_settings=settings,
