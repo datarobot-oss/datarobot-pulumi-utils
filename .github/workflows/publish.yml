@@ -14,21 +14,21 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Taskfile
-        uses: arduino/setup-task@v2
+        uses: arduino/setup-task@v3.0.0
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       # Ref: https://docs.astral.sh/uv/guides/integration/github/#installation
       - name: Setup uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install Dependencies
         run: uv sync --all-extras --dev
