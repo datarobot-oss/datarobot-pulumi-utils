@@ -88,7 +88,7 @@ Small runtime utilities:
 
 - `get_datarobot_url()` / `fix_url()`: resolve the external DataRobot URL,
   including airgapped on-premise clusters where the API returns internal
-  hostnames.
+  hostnames (see [docs/AIRGAP_URL_MIGRATION.md](docs/AIRGAP_URL_MIGRATION.md)).
 - `check_feature_flags()`: assert that the DataRobot feature flags your
   program depends on are enabled.
 
@@ -105,6 +105,18 @@ uv add datarobot-pulumi-utils
 ```
 
 Requires Python 3.10+.
+
+## Development
+
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management and
+[Task](https://taskfile.dev/) as the command runner:
+
+```bash
+uv sync --all-extras --dev   # set up the environment
+task lint-check              # check formatting, lint, and types (ruff + mypy)
+task test                    # run the test suite
+task build                   # build the package
+```
 
 ## Contributing
 
