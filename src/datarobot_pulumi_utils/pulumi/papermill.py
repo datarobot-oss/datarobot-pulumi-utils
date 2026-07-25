@@ -75,8 +75,8 @@ class PapermillProvider(dynamic.ResourceProvider):
         input_path = pathlib.Path(props["input_path"])
         output_path = pathlib.Path(props["output_path"]) if "output_path" in props else None
         parameters = props.get("parameters", {})
-        result_file = props.get("result_file", {})
-        cwd = input_path.parent
+        result_file = props["result_file"]
+        cwd = pathlib.Path(props["cwd"]) if props.get("cwd") else input_path.parent
 
         # Validate input file exists
         if not os.path.exists(input_path):
@@ -114,7 +114,7 @@ class PapermillProvider(dynamic.ResourceProvider):
                     "parameters": props.get("parameters", {}),
                     "result": result_from_file,
                     "result_file": str(result_file),
-                    "cwd": props.get("cwd", os.getcwd()),
+                    "cwd": str(cwd),
                 },
             )
 
@@ -160,7 +160,7 @@ class PapermillResource(dynamic.Resource):
             # create result file path by adding _output.yaml to the end of the input notebook name
             result_file = str(_input_path.parent / f"{_input_path.name}_output.yaml")
         if cwd is None:
-            cwd = os.getcwd()
+            cwd = str(pathlib.Path(input_path).parent)
 
         # Create the resource
         super().__init__(

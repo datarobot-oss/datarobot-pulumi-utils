@@ -16,28 +16,21 @@ Public interface for pulumi-exporter.
 
 Typical use:
 
-    from pulumi_exporter import export, finalize
+    from datarobot_pulumi_utils.pulumi.export_collector import export, finalize
 
     bucket = aws.s3.Bucket("b")
     export("bucket_name", bucket.id)
-    finalize()  # writes pulumi_exports.json by default (after resolution)
+    finalize()  # writes ../pulumi_config.json by default (after resolution)
 
 Or with a custom path & redactor:
 
-    from pulumi_exporter import ExportCollector
+    from datarobot_pulumi_utils.pulumi.export_collector import ExportCollector
 
     collector = ExportCollector(output_path="build/stack_outputs.json",
                                 redactor=lambda k,v: "***" if "secret" in k else v)
     export = collector.export  # optional alias
     # define resources ...
     collector.finalize()
-
-To patch existing code using pulumi.export:
-
-    from pulumi_exporter import patch_pulumi_export
-    patch_pulumi_export()
-    # existing pulumi.export(...) calls are now captured
-    finalize()
 """
 
 __all__ = [
@@ -189,7 +182,7 @@ class ExportCollector:
                 json.dump(data, f, indent=4, default=str)
         if on_written:
             on_written(self.output_path)
-        return None  # Pulumi requires a return
+        return None
 
 
 # Default singleton collector & functional facade

@@ -20,8 +20,6 @@ import pulumi
 from pulumi import Input
 from pulumi.dynamic import CreateResult, ResourceProvider, UpdateResult
 
-client = dr.Client()
-
 
 def schedule_dataset_refresh(
     dataset_id: str, credential_id: Optional[str], name: str, schedule: Union[Dict[str, Any], str]
@@ -38,6 +36,7 @@ def schedule_dataset_refresh(
     if credential_id is not None:
         payload["credentialId"] = credential_id
 
+    client = dr.client.get_client()
     resp = client.post(
         f"datasets/{dataset_id}/refreshJobs/",
         payload,
@@ -59,6 +58,7 @@ class RefreshPolicyProvider(ResourceProvider):
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
         dataset_id, refresh_id = id.split(":")
+        client = dr.client.get_client()
         client.delete(f"datasets/{dataset_id}/refreshJobs/{refresh_id}")
 
     def update(self, id: str, olds: Dict[str, Any], news: Dict[str, Any]) -> UpdateResult:

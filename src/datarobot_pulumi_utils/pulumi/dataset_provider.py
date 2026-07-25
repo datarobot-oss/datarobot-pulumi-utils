@@ -25,7 +25,7 @@ class DataRobotDatasetProvider(ResourceProvider):
         """Normalize properties to handle default values consistently."""
         return {
             "dataset_id": props.get("dataset_id"),
-            "managed": props.get("managed", False) if props.get("managed") is not None else False,
+            "managed": bool(props.get("managed")),
         }
 
     def diff(self, _id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> DiffResult:
@@ -39,7 +39,7 @@ class DataRobotDatasetProvider(ResourceProvider):
             old_value = normalized_olds.get(key)
             if old_value != new_value:
                 changes = True
-                if key == "dataset_id" and old_value != new_value:
+                if key == "dataset_id":
                     replaces.append(key)
 
         return DiffResult(changes=changes, replaces=replaces)
@@ -65,8 +65,8 @@ class DataRobotDatasetProvider(ResourceProvider):
         try:
             pulumi.log.info(f"Attempting to delete managed dataset with ID: {id}")
             dr.Dataset.delete(id)
-        except Exception:
-            pass
+        except Exception as e:
+            pulumi.log.warn(f"Failed to delete managed dataset {id}: {e}")
 
 
 class DataRobotDatasetResource(Resource):
