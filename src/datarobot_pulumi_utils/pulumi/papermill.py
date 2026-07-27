@@ -35,6 +35,7 @@ class PapermillProvider(dynamic.ResourceProvider):
         if (
             _olds["input_path"] != _news["input_path"]
             or _olds.get("parameters") != _news.get("parameters")
+            or _olds.get("cwd") != _news.get("cwd")
             or not os.path.exists(_news.get("result_file", ""))
         ):
             return dynamic.DiffResult(changes=True)
