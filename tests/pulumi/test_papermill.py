@@ -79,6 +79,17 @@ class TestDiff:
 
         assert result.changes is True
 
+    def test_changes_when_cwd_differs(self, provider, tmp_path: Path):
+        # cwd now affects execution, so a cwd-only change must trigger re-execution
+        result_file = tmp_path / "result.yaml"
+        result_file.touch()
+        olds = {"input_path": "nb.ipynb", "parameters": {}, "cwd": "/a", "result_file": str(result_file)}
+        news = {"input_path": "nb.ipynb", "parameters": {}, "cwd": "/b", "result_file": str(result_file)}
+
+        result = provider.diff("id", olds, news)
+
+        assert result.changes is True
+
 
 class TestExecuteNotebook:
     def test_missing_input_raises(self, provider, tmp_path: Path):

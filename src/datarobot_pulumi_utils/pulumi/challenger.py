@@ -43,7 +43,7 @@ class ChallengerProvider(ResourceProvider):
             )
         except Exception as e:
             pulumi.log.error(f"Failed to create DataRobot challenger: {e}")
-            raise e
+            raise
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
         try:

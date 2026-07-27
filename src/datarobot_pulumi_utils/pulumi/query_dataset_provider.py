@@ -23,11 +23,10 @@ from datarobot.models.data_engine_query_generator import (
 from pulumi import Input
 from pulumi.dynamic import CreateResult, ResourceProvider, UpdateResult
 
-client = dr.Client()
-
 
 def add_dataset_tag(dataset_id: str, tag_name: str) -> None:
     """Add a tag to a dataset"""
+    client = dr.client.get_client()
     client.patch(
         "datasets/",
         json={"datasetIds": [dataset_id], "payload": {"action": "tag", "tags": [tag_name]}},
@@ -104,14 +103,14 @@ class QueryDatasetProvider(ResourceProvider):
             # Delete the generator if it exists
             generator_id = props.get("generator_id")
             if generator_id:
+                client = dr.client.get_client()
                 try:
                     client.delete(f"dataEngineQueryGenerators/{generator_id}/")
                 except Exception:
                     # Generator might already be deleted or not exist
                     pass
-        except Exception:
-            # Dataset might already be deleted
-            pass
+        except Exception as e:
+            pulumi.log.warn(f"Failed to delete query dataset {id}: {e}")
 
     def update(self, id: str, olds: Dict[str, Any], news: Dict[str, Any]) -> UpdateResult:
         # Check if core properties changed that require recreation

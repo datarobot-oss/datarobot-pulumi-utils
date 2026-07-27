@@ -28,7 +28,7 @@ class CustomModelResourceBundles(Enum):
     CPU_M = ResourceBundle(name="M", description="1 CPU | 1GB RAM", id="cpu.medium")
     CPU_L = ResourceBundle(name="L", description="2 CPU | 1.5GB RAM", id="cpu.large")
     CPU_XL = ResourceBundle(name="XL", description="2 CPU | 2GB RAM", id="cpu.xlarge")
-    CPU_XXL = ResourceBundle(name="XXL", description="2 CPU | 3GB RAM", id="cpu.2xlarge")
+    CPU_XXL = ResourceBundle(name="2XL", description="2 CPU | 3GB RAM", id="cpu.2xlarge")
     CPU_3XL = ResourceBundle(name="3XL", description="2 CPU | 4GB RAM", id="cpu.3xlarge")
     CPU_4XL = ResourceBundle(name="4XL", description="2 CPU | 6GB RAM", id="cpu.4xlarge")
     CPU_5XL = ResourceBundle(name="5XL", description="2 CPU | 8GB RAM", id="cpu.5xlarge")

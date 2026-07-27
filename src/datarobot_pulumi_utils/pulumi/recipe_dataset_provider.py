@@ -19,8 +19,6 @@ import pulumi
 from pulumi import Input
 from pulumi.dynamic import CreateResult, ResourceProvider, UpdateResult
 
-client = dr.Client()
-
 
 class RecipeDatasetProvider(ResourceProvider):
     def create(self, props: Dict[str, Any]) -> CreateResult:
@@ -45,6 +43,7 @@ class RecipeDatasetProvider(ResourceProvider):
             recipe_type=recipe_type,
         )
 
+        client = dr.client.get_client()
         client.put(
             f"recipes/{recipe.id}/inputs",
             json={"inputs": inputs},
@@ -65,10 +64,11 @@ class RecipeDatasetProvider(ResourceProvider):
 
     def delete(self, id: str, props: Dict[str, Any]) -> None:
         try:
+            client = dr.client.get_client()
             client.delete(f"useCases/{props['use_case_id']}/recipes/{props['recipe_id']}/?deleteResource=true")
             dr.Dataset.delete(dataset_id=id)
-        except Exception:
-            pass
+        except Exception as e:
+            pulumi.log.warn(f"Failed to delete recipe dataset {id}: {e}")
 
     def update(self, id: str, olds: Dict[str, Any], news: Dict[str, Any]) -> UpdateResult:
         # If core properties changed, recreate the recipe
@@ -84,16 +84,15 @@ class RecipeDatasetProvider(ResourceProvider):
             create_result = self.create(news)
 
             return UpdateResult(outs=create_result.outs)
-        if olds.get("name") != news.get("name") or olds.get("recipe_name") != news.get("recipe_name"):
-            if olds.get("name") != news.get("name"):
-                recipe_dataset = dr.Dataset.get(id)
-                recipe_dataset.modify(name=news["name"])
-            if olds.get("recipe_name") != news.get("recipe_name"):
-                recipe = dr.models.Recipe.get(news["recipe_id"])
-                recipe.set_recipe_metadata(
-                    recipe_id=recipe.id,
-                    metadata={"name": news["recipe_name"]},
-                )
+        if olds.get("name") != news.get("name"):
+            recipe_dataset = dr.Dataset.get(id)
+            recipe_dataset.modify(name=news["name"])
+        if olds.get("recipe_name") != news.get("recipe_name"):
+            recipe = dr.models.Recipe.get(news["recipe_id"])
+            recipe.set_recipe_metadata(
+                recipe_id=recipe.id,
+                metadata={"name": news["recipe_name"]},
+            )
 
         return UpdateResult(outs=news)
 
