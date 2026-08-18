@@ -106,10 +106,12 @@ class ProviderCredential:
                         temp_file.write(found_value)
                 except OSError:
                     log.exception("Failed to create temp file for GOOGLE_APPLICATION_CREDENTIALS")
-                    continue
-                if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
-                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
-                continue
+                else:
+                    if "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
+                        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file.name
+                # No `continue`: the JSON must still cross-populate below, so an environment
+                # with only VERTEXAI_SERVICE_ACCOUNT ends up with GOOGLE_SERVICE_ACCOUNT set
+                # for the GoogleCloudCredential's gcp_key.
 
             # Copy the found value to all missing combinations
             for prefix in self.prefix_list:

@@ -277,6 +277,27 @@ def test_hydrate_env_google_service_account_json_becomes_a_credentials_file(monk
     assert json.loads(open(written_path).read()) == json.loads(payload)
 
 
+def test_hydrate_env_vertexai_service_account_alias_populates_google_service_account(monkeypatch):
+    # Regression: the _SERVICE_ACCOUNT branch used to `continue` past cross-population, so an
+    # environment with only VERTEXAI_SERVICE_ACCOUNT left GOOGLE_SERVICE_ACCOUNT unset.
+    payload = '{"type": "service_account", "project_id": "p"}'
+    monkeypatch.setenv("VERTEXAI_SERVICE_ACCOUNT", payload)
+
+    PROVIDER_CREDENTIALS_MAP["vertex_ai"].hydrate_env()
+
+    assert os.environ["GOOGLE_SERVICE_ACCOUNT"] == payload
+
+
+def test_vertexai_only_environment_still_populates_gcp_key(monkeypatch, mock_pulumi):
+    # End to end: the GoogleCloudCredential must not be declared with gcp_key=None.
+    payload = '{"type": "service_account", "project_id": "p"}'
+    monkeypatch.setenv("VERTEXAI_SERVICE_ACCOUNT", payload)
+
+    get_runtime_values("vertex_ai/gemini-2.5-pro", resource_suffix="[app]")
+
+    assert mock_pulumi.GoogleCloudCredential.call_args.kwargs["gcp_key"] == payload
+
+
 def test_hydrate_env_google_credentials_file_becomes_service_account_json(monkeypatch, tmp_path):
     # GOOGLE_APPLICATION_CREDENTIALS (file path) -> GOOGLE_SERVICE_ACCOUNT (JSON string)
     payload = '{"type": "service_account", "project_id": "p"}'
