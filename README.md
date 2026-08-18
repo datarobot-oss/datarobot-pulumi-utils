@@ -98,6 +98,12 @@ Small runtime utilities:
   feature flags your program depends on are enabled -- from a YAML file, or from an
   in-memory `dict[str, bool]` respectively.
 
+- `verify_llm_gateway_model_availability()`: assert a model is present and active in
+  this cluster's LLM Gateway catalog before deploying against it.
+- `verify_llm()`: send a one-token "Hi" to the configured LLM -- deployment, gateway, or
+  external provider -- so a misconfigured model fails before `pulumi up` rather than after.
+  Requires the optional `llm` extra.
+
 ```python
 from datarobot_pulumi_utils.common import get_datarobot_url, fix_url
 ```
@@ -108,6 +114,15 @@ from datarobot_pulumi_utils.common import get_datarobot_url, fix_url
 pip install datarobot-pulumi-utils
 # or
 uv add datarobot-pulumi-utils
+```
+
+`common.llm_validation.verify_llm()` needs `litellm`, which ships as the optional `llm`
+extra:
+
+```bash
+pip install "datarobot-pulumi-utils[llm]"
+# or
+uv add "datarobot-pulumi-utils[llm]"
 ```
 
 Requires Python 3.10+.
