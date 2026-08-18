@@ -61,19 +61,23 @@ def eval_feature_flag_statuses(desired_flags: FeatureFlagSet) -> tuple[list[Feat
         return get_corrections(valid_desired_flags, valid_desired_flag_states), invalid_flags
 
 
-def check_feature_flags(yaml_path: pathlib.Path, raise_corrections: bool = True) -> None:
+def check_feature_flag_set(flags: FeatureFlagSet, raise_corrections: bool = True) -> None:
     """
-    Find incorrect and invalid feature flags
+    Verify an in-memory set of desired feature flag states against DataRobot.
 
-    Returns
-    -------
-    A list of feature flag corrections the user needs to make and
-    a list of invalid feature flags.
+    Emits a Pulumi warning for every desired flag that is no longer a valid DataRobot
+    feature flag, and a Pulumi error for every flag whose actual state differs from the
+    desired one.
+
+    Parameters
+    ----------
+    flags:
+        Mapping of feature flag name to the state the program requires.
+    raise_corrections:
+        When True (the default), raise :class:`pulumi.RunError` if any flag needs
+        correcting. Pass False to report the problems without halting the program.
     """
-    with open(yaml_path) as f:
-        desired_flags = yaml.safe_load(f)
-
-    desired_flags = {k: bool(v) for k, v in desired_flags.items()}
+    desired_flags = {k: bool(v) for k, v in flags.items()}
 
     corrections, invalid_flags = eval_feature_flag_statuses(desired_flags)
 
@@ -93,3 +97,16 @@ def check_feature_flags(yaml_path: pathlib.Path, raise_corrections: bool = True)
 
     if corrections and raise_corrections:
         raise pulumi.RunError("Please correct feature flag settings and run again.")
+
+
+def check_feature_flags(yaml_path: pathlib.Path, raise_corrections: bool = True) -> None:
+    """
+    Verify the desired feature flag states declared in a YAML file against DataRobot.
+
+    Thin wrapper over :func:`check_feature_flag_set` that loads the desired states from
+    ``yaml_path``, a flat mapping of flag name to boolean.
+    """
+    with open(yaml_path) as f:
+        desired_flags = yaml.safe_load(f)
+
+    check_feature_flag_set(desired_flags, raise_corrections=raise_corrections)

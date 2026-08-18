@@ -11,6 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""LLM naming for DataRobot deployments.
+
+This module holds **two distinct naming namespaces**; do not mix them:
+
+1. :class:`LLMs` — *playground* LLM ids consumed by DataRobot playgrounds and LLM
+   blueprints (for example ``azure-openai-gpt-5-mini``). Dash-separated, and only
+   meaningful to the playground / blueprint APIs.
+2. :data:`DEPLOYED_LLM_PLACEHOLDER_MODEL` and :func:`ensure_datarobot_prefix` — *LLM
+   Gateway / LiteLLM* model strings (for example ``datarobot/azure/gpt-5-mini-2025-08-07``).
+   Slash-separated, and only meaningful to LiteLLM and the DataRobot LLM Gateway.
+
+An ``LLMs`` member name is never a valid input to ``ensure_datarobot_prefix``, and a
+gateway model string is never a valid playground ``llm_id``. They are co-located because
+both answer "what do I call this model?", not because they are interchangeable.
+"""
+
 from __future__ import annotations
 
 from typing import Literal
@@ -240,3 +256,27 @@ class LLMBlueprintArgs(Schema):
     name: str | None = None
     prompt_type: str | None = None
     vector_database_settings: VectorDatabaseSettings | None = None
+
+
+# Inert placeholder model for strategies that route by deployment ID (e.g. an opaque,
+# pre-existing deployment whose served model we don't know). Nothing keys on this value:
+# the deployment endpoint routes by its ID and ignores the model string. It is deliberately
+# named so it can never be mistaken for a real model. Callers can override it with their
+# app's ``<APP>_DEFAULT_MODEL`` environment variable when they want the real name (e.g. so
+# datarobot-genai can match provider-specific reasoning parameters).
+DEPLOYED_LLM_PLACEHOLDER_MODEL = "datarobot/datarobot-deployed-llm"
+
+
+def ensure_datarobot_prefix(model_name: str) -> str:
+    """Return an LLM Gateway model name in the unified ``datarobot/`` form.
+
+    Accepts ``provider/model`` (``azure/gpt-5-mini``), a bare ``model`` (``gpt-5-mini``), or an
+    already-prefixed value, and always returns a ``datarobot/``-prefixed string. This is the one
+    canonical form for every routing strategy: datarobot-genai routes gateway/deployment/nim on
+    it directly and strips the prefix for the external-provider path, so a single prefixed value
+    is correct in all four modes.
+
+    Note this operates on *gateway / LiteLLM* model strings, not on the *playground* LLM ids in
+    :class:`LLMs` -- see the module docstring.
+    """
+    return model_name if model_name.startswith("datarobot/") else f"datarobot/{model_name}"
