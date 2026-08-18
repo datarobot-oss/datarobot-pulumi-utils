@@ -17,3 +17,5 @@ uv.lock
 
 # Editors
 .idea
+# Local scratch (plans, notes)
+.local/
