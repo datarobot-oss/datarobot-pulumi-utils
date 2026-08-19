@@ -87,6 +87,20 @@ collection, and stack helpers.
 from datarobot_pulumi_utils.pulumi.stack import get_stack
 ```
 
+`pulumi.llm_credentials.get_runtime_values()` resolves which provider serves a gateway
+model, creates the DataRobot credential resources that provider needs, and returns the
+custom-model runtime parameter values referencing them.
+`pulumi.llm_blueprint.get_blueprint_runtime_parameters()` returns the full runtime
+parameter set a blueprint-backed custom model needs to load.
+
+```python
+from datarobot_pulumi_utils.pulumi.llm_credentials import get_runtime_values
+
+# `resource_suffix` is part of each credential's resource name, and therefore part of its
+# Pulumi identity -- changing it replaces live credentials.
+runtime_values = get_runtime_values("datarobot/azure/gpt-5-mini", resource_suffix="[my-app]")
+```
+
 ### `datarobot_pulumi_utils.common`
 
 Small runtime utilities:
