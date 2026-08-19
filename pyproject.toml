@@ -39,6 +39,11 @@ dependencies = [
     "ipykernel>=6.0.0,<8.0",
 ]
 
+[project.optional-dependencies]
+# `litellm` is heavy and only common.llm_validation.verify_llm() needs it, so it is an
+# opt-in extra rather than a base dependency.
+llm = ["litellm>=1.91.1,<2.0.0"]
+
 [project.urls]
 Homepage = "https://datarobot.com"
 Source = "https://github.com/datarobot-oss/datarobot-pulumi-utils"
@@ -50,6 +55,8 @@ dev = [
     "pytest>=8.3.5",
     "ruff>=0.11.1",
     "types-pyyaml>=6.0.12.20241230",
+    # Optional `llm` extra, installed for dev so CI type-checks and tests that code path.
+    "litellm>=1.91.1,<2.0.0",
 ]
 
 [build-system]
@@ -184,6 +191,10 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = "datarobot.*"
 implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = "litellm.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 filterwarnings = [

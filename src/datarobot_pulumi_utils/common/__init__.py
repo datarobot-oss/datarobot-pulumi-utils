@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from .feature_flags import check_feature_flag_set, check_feature_flags
+from .llm_validation import verify_llm, verify_llm_gateway_model_availability
 from .urls import fix_url, get_datarobot_url
 
 __all__ = (
@@ -19,4 +20,6 @@ __all__ = (
     "check_feature_flags",
     "fix_url",
     "get_datarobot_url",
+    "verify_llm",
+    "verify_llm_gateway_model_availability",
 )
