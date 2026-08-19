@@ -42,7 +42,7 @@ dependencies = [
 [project.optional-dependencies]
 # `litellm` is heavy and only common.llm_validation.verify_llm() needs it, so it is an
 # opt-in extra rather than a base dependency.
-llm = ["litellm>=1.91.1,<2.0.0"]
+llm = ["litellm[google]>=1.91.1,<2.0.0"]
 
 [project.urls]
 Homepage = "https://datarobot.com"
