@@ -67,6 +67,11 @@ from datarobot_pulumi_utils.schema.exec_envs import RuntimeEnvironments
 base_env_id = RuntimeEnvironments.PYTHON_312_APPLICATION_BASE.value.id
 ```
 
+`schema.llms` additionally holds the LLM Gateway naming helpers
+`ensure_datarobot_prefix()` and `DEPLOYED_LLM_PLACEHOLDER_MODEL`. Note these operate on
+*gateway / LiteLLM* model strings (`datarobot/azure/gpt-5-mini`), which are a different
+namespace from the *playground* LLM ids in `LLMs` (`azure-openai-gpt-5-mini`).
+
 ### `datarobot_pulumi_utils.pulumi`
 
 Custom Pulumi resources (mostly
@@ -89,8 +94,9 @@ Small runtime utilities:
 - `get_datarobot_url()` / `fix_url()`: resolve the external DataRobot URL,
   including airgapped on-premise clusters where the API returns internal
   hostnames (see [docs/AIRGAP_URL_MIGRATION.md](docs/AIRGAP_URL_MIGRATION.md)).
-- `check_feature_flags()`: assert that the DataRobot feature flags your
-  program depends on are enabled.
+- `check_feature_flags()` / `check_feature_flag_set()`: assert that the DataRobot
+  feature flags your program depends on are enabled -- from a YAML file, or from an
+  in-memory `dict[str, bool]` respectively.
 
 ```python
 from datarobot_pulumi_utils.common import get_datarobot_url, fix_url
