@@ -52,6 +52,7 @@ class RuntimeEnvironments(Enum):
     PYTHON_311_GENAI_AGENTS = RuntimeEnvironment(name="[DataRobot] Python 3.11 GenAI Agents")
     PYTHON_311_GENAI = RuntimeEnvironment(name="[DataRobot] Python 3.11 GenAI")
     PYTHON_39_GENAI = RuntimeEnvironment(name="[DataRobot] Python 3.9 GenAI")
+    PYTHON_3_MCP = RuntimeEnvironment(name="[DataRobot] Python 3 MCP")
     PYTHON_39_ONNX = RuntimeEnvironment(name="[DataRobot] Python 3.9 ONNX Drop-In")
     JULIA_DROP_IN = RuntimeEnvironment(name="[DataRobot] Julia Drop-In")
     PYTHON_39_PMML = RuntimeEnvironment(name="[DataRobot] Python 3.9 PMML Drop-In")
