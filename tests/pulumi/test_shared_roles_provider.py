@@ -105,17 +105,13 @@ def test_create_grants_the_resolved_group(mock_dr):
     _search_returns(mock_dr, total=1, group_id="grp-9")
 
     # WHEN the share is created
-    result = DataRobotSharedRolesProvider().create(
-        {"deployment_id": "dep-1", "group_name": "Finance"}
-    )
+    result = DataRobotSharedRolesProvider().create({"deployment_id": "dep-1", "group_name": "Finance"})
 
     # THEN the resolved id is granted the default role on that deployment
     args, kwargs = _patch_calls(mock_dr)[0]
     assert args[0] == "deployments/dep-1/sharedRoles/"
     assert kwargs["json"]["operation"] == "updateRoles"
-    assert kwargs["json"]["roles"] == [
-        {"shareRecipientType": "group", "id": "grp-9", "role": DEFAULT_ROLE}
-    ]
+    assert kwargs["json"]["roles"] == [{"shareRecipientType": "group", "id": "grp-9", "role": DEFAULT_ROLE}]
 
     # AND the group id is recorded so it can be revoked later
     assert result.outs["group_id"] == "grp-9"
@@ -128,9 +124,7 @@ def test_create_rejects_a_name_that_matches_nothing(mock_dr):
 
     # THEN creating the share fails rather than sharing with nobody
     with pytest.raises(ValueError, match="found 0"):
-        DataRobotSharedRolesProvider().create(
-            {"deployment_id": "dep-1", "group_name": "Nope"}
-        )
+        DataRobotSharedRolesProvider().create({"deployment_id": "dep-1", "group_name": "Nope"})
 
 
 def test_create_rejects_an_ambiguous_name(mock_dr):
@@ -139,15 +133,13 @@ def test_create_rejects_an_ambiguous_name(mock_dr):
 
     # THEN creating the share fails rather than guessing which one was meant
     with pytest.raises(ValueError, match="found 2"):
-        DataRobotSharedRolesProvider().create(
-            {"deployment_id": "dep-1", "group_name": "Finance"}
-        )
+        DataRobotSharedRolesProvider().create({"deployment_id": "dep-1", "group_name": "Finance"})
 
     # AND nothing was granted
     assert _patch_calls(mock_dr) == []
 
 
-def test_update_revokes_the_previous_group_first(mock_dr):
+def test_update_grants_the_new_group_before_revoking_the_old(mock_dr):
     # GIVEN the group name has changed since the last apply
     _search_returns(mock_dr, total=1, group_id="grp-new")
 
@@ -158,10 +150,43 @@ def test_update_revokes_the_previous_group_first(mock_dr):
         {"deployment_id": "dep-1", "group_name": "FinanceEMEA"},
     )
 
-    # THEN the old grant is removed before the new one is added
+    # THEN the new grant lands first, so a failure part way through leaves the
+    # group over-permissive rather than locked out
     roles = [kwargs["json"]["roles"][0] for _, kwargs in _patch_calls(mock_dr)]
-    assert roles[0] == {"shareRecipientType": "group", "id": "grp-old", "role": "NO_ROLE"}
-    assert roles[1] == {"shareRecipientType": "group", "id": "grp-new", "role": DEFAULT_ROLE}
+    assert roles[0] == {"shareRecipientType": "group", "id": "grp-new", "role": DEFAULT_ROLE}
+    assert roles[1] == {"shareRecipientType": "group", "id": "grp-old", "role": "NO_ROLE"}
+
+
+def test_update_leaves_the_existing_grant_alone_when_the_new_name_is_bad(mock_dr):
+    # GIVEN the new group name matches nothing
+    _search_returns(mock_dr, total=0)
+
+    # WHEN the resource is updated
+    with pytest.raises(ValueError, match="found 0"):
+        DataRobotSharedRolesProvider().update(
+            "dep-1:grp-old",
+            {"deployment_id": "dep-1", "group_name": "Finance", "group_id": "grp-old"},
+            {"deployment_id": "dep-1", "group_name": "Typo"},
+        )
+
+    # THEN nothing was revoked, so the previous group keeps its access
+    assert _patch_calls(mock_dr) == []
+
+
+def test_update_does_not_revoke_when_the_name_resolves_to_the_same_group(mock_dr):
+    # GIVEN the group name changed but resolves to the same group
+    _search_returns(mock_dr, total=1, group_id="grp-1")
+
+    # WHEN the resource is updated
+    DataRobotSharedRolesProvider().update(
+        "dep-1:grp-1",
+        {"deployment_id": "dep-1", "group_name": "Finance", "group_id": "grp-1"},
+        {"deployment_id": "dep-1", "group_name": "finance-alias"},
+    )
+
+    # THEN the grant is not revoked straight after being set
+    roles = [kwargs["json"]["roles"][0] for _, kwargs in _patch_calls(mock_dr)]
+    assert roles == [{"shareRecipientType": "group", "id": "grp-1", "role": DEFAULT_ROLE}]
 
 
 def test_update_does_not_revoke_when_only_the_role_changed(mock_dr):
@@ -194,9 +219,7 @@ def test_delete_revokes_the_recorded_group(mock_dr):
 
 def test_delete_is_a_noop_without_a_recorded_group(mock_dr):
     # WHEN there is no group id in state, e.g. a failed create
-    DataRobotSharedRolesProvider().delete(
-        "dep-1", {"deployment_id": "dep-1", "group_name": "Finance"}
-    )
+    DataRobotSharedRolesProvider().delete("dep-1", {"deployment_id": "dep-1", "group_name": "Finance"})
 
     # THEN nothing is called
     assert _patch_calls(mock_dr) == []

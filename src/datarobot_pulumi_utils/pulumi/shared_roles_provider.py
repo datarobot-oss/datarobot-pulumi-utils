@@ -118,21 +118,27 @@ class DataRobotSharedRolesProvider(ResourceProvider):
         )
 
     def update(self, id: str, _olds: Dict[str, Any], _news: Dict[str, Any]) -> UpdateResult:
-        normalized_olds = self._normalize_props(_olds)
         normalized_news = self._normalize_props(_news)
 
         deployment_id = normalized_news["deployment_id"]
         group_name = normalized_news["group_name"]
         role = normalized_news["role"]
 
-        previous_group_id = _olds.get("group_id")
-        if previous_group_id and normalized_olds["group_name"] != group_name:
-            # The grant is keyed on the group, so revoke the old one before adding
-            # the new. Without this a renamed variable would leave a stale grant.
-            _set_role(deployment_id, previous_group_id, NO_ROLE)
-
+        # Resolve before mutating anything. An unknown or ambiguous name must fail
+        # while the existing grant is still intact.
         group_id = _resolve_group_id(group_name)
+
+        # Grant the new role before revoking the old one, so a failure part way
+        # through leaves the group over-permissive rather than locked out. Pulumi
+        # keeps the old props when an update fails, so the next apply diffs against
+        # them and retries the revoke.
         _set_role(deployment_id, group_id, role)
+
+        previous_group_id = _olds.get("group_id")
+        if previous_group_id and previous_group_id != group_id:
+            # The grant is keyed on the group, so a changed group name would
+            # otherwise leave the previous group's access in place.
+            _set_role(deployment_id, previous_group_id, NO_ROLE)
 
         return UpdateResult(
             outs={
