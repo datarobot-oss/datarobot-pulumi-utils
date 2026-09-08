@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import pulumi
 import pulumi_datarobot as datarobot
@@ -62,7 +62,9 @@ class ProxyLLMBlueprint(pulumi.ComponentResource):
             llm_id=llm_id,
             playground_id=playground_id,
             vector_database_id=vector_database_id,
-            vector_database_settings=vector_database_settings.model_dump()
+            vector_database_settings=cast(
+                datarobot.LlmBlueprintVectorDatabaseSettingsArgsDict, vector_database_settings.model_dump()
+            )
             if vector_database_settings is not None
             else None,
             opts=pulumi.ResourceOptions(parent=self),
