@@ -47,7 +47,6 @@ class RuntimeEnvironments(Enum):
     PYTHON_312_MODERATIONS = RuntimeEnvironment(name="[GenAI] Python 3.12 with Moderations")
     PYTHON_39_CUSTOM_METRICS = RuntimeEnvironment(name="[DataRobot] Python 3.9 Custom Metrics Templates Drop-In")
     PYTHON_311_NOTEBOOK_DROP_IN = RuntimeEnvironment(name="[DataRobot] Python 3.11 Notebook Drop-In")
-    PYTHON_39_STREAMLIT = RuntimeEnvironment(name="[Experimental] Python 3.9 Streamlit")
     PYTHON_3_GENAI_AGENTS = RuntimeEnvironment(name="[DataRobot] Python 3 GenAI Agents")
     PYTHON_311_GENAI_AGENTS = RuntimeEnvironment(name="[DataRobot] Python 3.11 GenAI Agents")
     PYTHON_311_GENAI = RuntimeEnvironment(name="[DataRobot] Python 3.11 GenAI")
