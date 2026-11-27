@@ -22,6 +22,7 @@ from .llm_credentials import (
     get_runtime_values,
     resolve_provider_credential,
 )
+from .stack_outputs import write_dotenv, write_manifest
 
 __all__ = [
     "default_collector",
@@ -35,4 +36,6 @@ __all__ = [
     "resolve_execution_environment_version",
     "resolve_provider_credential",
     "RuntimeParameterValueArgs",
+    "write_dotenv",
+    "write_manifest",
 ]

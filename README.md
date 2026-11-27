@@ -101,6 +101,10 @@ from datarobot_pulumi_utils.pulumi.llm_credentials import get_runtime_values
 runtime_values = get_runtime_values("datarobot/azure/gpt-5-mini", resource_suffix="[my-app]")
 ```
 
+`pulumi.write_dotenv()` and `pulumi.write_manifest()` write outputs into a `.env` file, or into
+`useCaseId` and the `# >>> infra outputs` block of a workload's `.datarobot.yaml`, once `pulumi up`
+resolves them. Preview writes nothing; secret outputs are skipped.
+
 ### `datarobot_pulumi_utils.common`
 
 Small runtime utilities:
