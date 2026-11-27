@@ -117,6 +117,10 @@ Small runtime utilities:
 - `verify_llm()`: send a one-token "Hi" to the configured LLM -- deployment, gateway, or
   external provider -- so a misconfigured model fails before `pulumi up` rather than after.
   Requires the optional `llm` extra.
+- `pulumi-outputs` (command line): write a stack's outputs into a `.env` file
+  (`pulumi-outputs --stack dev dotenv NAME...`) or into the `# >>> infra outputs` block and
+  `useCaseId` of a workload's `.datarobot.yaml` (`pulumi-outputs --stack prod manifest`).
+  Run it in the Pulumi project's directory; `--help` lists the options.
 
 ```python
 from datarobot_pulumi_utils.common import get_datarobot_url, fix_url

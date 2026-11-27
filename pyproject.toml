@@ -44,6 +44,9 @@ dependencies = [
 # opt-in extra rather than a base dependency.
 llm = ["litellm[google]>=1.91.1,<2.0.0"]
 
+[project.scripts]
+pulumi-outputs = "datarobot_pulumi_utils.common.stack_outputs:main"
+
 [project.urls]
 Homepage = "https://datarobot.com"
 Source = "https://github.com/datarobot-oss/datarobot-pulumi-utils"
