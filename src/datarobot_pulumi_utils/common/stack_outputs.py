@@ -37,6 +37,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+# What `pulumi stack output` shows for an output whose resource an update didn't reach.
+from pulumi.runtime.rpc import UNKNOWN
+
 PROG = "pulumi-outputs"
 START_MARKER = "# >>> infra outputs"
 END_MARKER = "# <<< infra outputs"
@@ -45,9 +48,6 @@ ENV_NAME = re.compile(r"^[A-Z][A-Z0-9_]*$")
 NAME_LINE = re.compile(r"^\s*(?:-\s+)?name:\s*['\"]?([A-Za-z_][A-Za-z0-9_]*)['\"]?\s*$")
 VALUE_LINE = re.compile(r"^\s*value:\s*(.*?)\s*$")
 SECRET = "[secret]"
-# Pulumi's placeholder for an output it couldn't compute: what `pulumi stack output` shows for a
-# resource an update didn't reach (a failed or `--target` update).
-UNKNOWN = "04da6b54-80e4-46f7-96ec-b56ff0331ba9"
 USE_CASE_OUTPUT = "DATAROBOT_USE_CASE_ID"
 USE_CASE_LINE = re.compile(r"^useCaseId:.*$")
 
